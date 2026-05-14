@@ -16,6 +16,8 @@ export const demoBusiness: Business = {
   address_line: 'Unit 4, Marina Commercial Park',
   city: 'Cork',
   eircode: 'T12 A1B2',
+  latitude: 51.8998,
+  longitude: -8.4527,
   phone: '+353 87 123 4567',
   email: 'hello@evolvperformance.ie',
   socials: {
