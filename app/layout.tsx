@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import { Fraunces, Geist, Geist_Mono } from 'next/font/google';
+import { Fraunces } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 
 const fraunces = Fraunces({
@@ -7,18 +9,6 @@ const fraunces = Fraunces({
   variable: '--font-display',
   display: 'swap',
   axes: ['SOFT', 'WONK', 'opsz']
-});
-
-const geist = Geist({
-  subsets: ['latin'],
-  variable: '--font-body',
-  display: 'swap'
-});
-
-const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  display: 'swap'
 });
 
 export const metadata: Metadata = {
@@ -29,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${geist.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${GeistSans.variable} ${GeistMono.variable}`}>
       <body>{children}</body>
     </html>
   );
