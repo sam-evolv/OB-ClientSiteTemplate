@@ -35,8 +35,6 @@ export async function getBusinessBySlug(slug: string): Promise<Business | null> 
       address_line,
       city,
       eircode,
-      latitude,
-      longitude,
       phone,
       email,
       socials,
