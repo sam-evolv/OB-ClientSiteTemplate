@@ -206,8 +206,13 @@ function Testimonials({ testimonials }: { testimonials: NonNullable<Business['te
 function FindUs({ business }: { business: Business }) {
   const directions = mapsUrl([business.address_line, business.city, business.eircode]);
   const mapboxToken = process.env.MAPBOX_TOKEN;
-  const mapQuery = [business.address_line, business.city, business.eircode].filter(Boolean).join(', ');
-  const mapUrl = mapboxToken && mapQuery ? `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-s+${business.primary_colour.replace('#', '')}(${encodeURIComponent(mapQuery)})/auto/1200x520@2x?access_token=${mapboxToken}` : null;
+  const latitude = Number(business.latitude);
+  const longitude = Number(business.longitude);
+  const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
+  const markerColour = business.primary_colour.replace('#', '');
+  const mapUrl = mapboxToken && hasCoordinates
+    ? `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-s+${markerColour}(${longitude},${latitude})/${longitude},${latitude},14,0/1200x520@2x?access_token=${mapboxToken}`
+    : null;
   const gettingHere = [business.parking_info, business.nearest_landmark, business.public_transport_info].filter(Boolean);
 
   return (
@@ -324,6 +329,11 @@ function getLocalBusinessJsonLd(business: Business) {
       postalCode: business.eircode || undefined,
       addressCountry: 'IE'
     },
+    geo: business.latitude && business.longitude ? {
+      '@type': 'GeoCoordinates',
+      latitude: business.latitude,
+      longitude: business.longitude
+    } : undefined,
     priceRange: business.services?.some((service) => service.price) ? '€€' : undefined,
     sameAs: business.socials ? Object.values(business.socials).filter(Boolean) : undefined
   };
