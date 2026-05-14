@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 export function isHexColor(value: string | null | undefined): value is string {
   return Boolean(value && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value));
 }
@@ -37,5 +39,5 @@ export function getAccentTheme(primaryColour?: string | null) {
     '--accent-soft': mix(accent, '#ffffff', 0.28),
     '--accent-dark': mix(accent, '#000000', 0.34),
     '--accent-wash': `${accent}24`
-  } as React.CSSProperties;
+  } as CSSProperties;
 }
