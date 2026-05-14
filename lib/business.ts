@@ -69,7 +69,7 @@ export async function getAllBusinessSlugs() {
     auth: { persistSession: false }
   });
 
-  const { data } = await supabase.from('businesses').select('slug').eq('is_public', true);
+  const { data } = await supabase.from('businesses').select('slug');
   return data?.map((row) => row.slug).filter(Boolean) ?? [];
 }
 
