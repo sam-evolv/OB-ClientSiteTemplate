@@ -51,6 +51,8 @@ export type Business = {
   address_line?: string | null;
   city?: string | null;
   eircode?: string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
   phone?: string | null;
   email?: string | null;
   socials?: SocialLinks | null;
