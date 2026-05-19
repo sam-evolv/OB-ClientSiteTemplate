@@ -2,94 +2,70 @@
 /**
  * extract-v9-images.ts
  *
- * Writes the eight images embedded in the original simply_golf_v9.jsx artifact
- * to disk as JPEG files under reference/v9-extracted/. The output is the source
- * of truth for the SIMply Golf 365 image set that will later be uploaded to
- * Supabase Storage (bucket `media`, path `media/{business_id}/{filename}`).
+ * Reads the eight images embedded as base64 data URIs in
+ * reference/simply_golf_v9_original.jsx and writes them as real JPEG or PNG
+ * files under reference/v9-extracted/. Output filename extension is chosen
+ * from the mime type captured in each data URI, not hardcoded.
  *
- * Deviation note (foundation session, 2026-05-19):
- *   The script is wired and the file slots are correct, but the eight base64
- *   constants below currently hold a placeholder 1x1 black JPEG instead of the
- *   real image bytes. The original v9 base64 strings are ~700 KB in total which
- *   exceeded the output bandwidth available in the foundation session.
+ * Run:
+ *   node --experimental-strip-types scripts/extract-v9-images.ts
  *
- *   To finish the extraction in a follow-up session:
- *     1. Open the original simply_golf_v9.jsx artifact (the version with
- *        inline base64) outside this repo.
- *     2. Replace the eight PLACEHOLDER_BASE64 constants below with the
- *        corresponding values from the artifact:
- *          LOGO_URL_DATA          -> the constant named LOGO_URL
- *          HERO_BG_URL_DATA       -> HERO_BG_URL
- *          ABOUT_PORTRAIT_URL_DATA-> ABOUT_PORTRAIT_URL
- *          GALLERY_1_URL_DATA     -> GALLERY_1_URL
- *          GALLERY_2_URL_DATA     -> GALLERY_2_URL
- *          GALLERY_3_URL_DATA     -> GALLERY_3_URL
- *          GALLERY_4_URL_DATA     -> GALLERY_4_URL
- *          GALLERY_5_URL_DATA     -> GALLERY_5_URL
- *        Each value is the part after `data:image/jpeg;base64,`.
- *     3. Re-run `node --experimental-strip-types scripts/extract-v9-images.ts`
- *        (Node 22 supports this without a build step).
- *     4. Commit the updated JPEGs.
- *
- * The 1x1 placeholders are deliberately tiny and valid so that:
- *   - The mock data in lib/mock/simply-golf.ts can reference these paths
- *     without breaking image pipelines.
- *   - The architecture compiles and renders end to end during the foundation
- *     work.
- *   - The visual fidelity of v9 is a known, scheduled follow-up rather than a
- *     hidden gap.
+ * Each expected variable name in VARIABLE_TO_FILENAME must be present in the
+ * artifact. If any is missing the script exits non-zero so the gap is loud.
  */
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUTPUT_DIR = join(__dirname, '..', 'reference', 'v9-extracted');
+const REPO_ROOT = join(__dirname, '..');
+const ARTIFACT = join(REPO_ROOT, 'reference', 'simply_golf_v9_original.jsx');
+const OUTPUT_DIR = join(REPO_ROOT, 'reference', 'v9-extracted');
 
-// Minimal valid 1x1 JPEG, solid black. Replace with real v9 base64 to ship.
-const PLACEHOLDER_BASE64 =
-  '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/' +
-  '2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QA' +
-  'FQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oA' +
-  'DAMBAAIRAxEAPwA/AP/Z';
+const VARIABLE_TO_FILENAME: Record<string, string> = {
+  LOGO_URL: 'logo',
+  HERO_BG_URL: 'hero',
+  ABOUT_PORTRAIT_URL: 'about-portrait',
+  GALLERY_1_URL: 'gallery-1',
+  GALLERY_2_URL: 'gallery-2',
+  GALLERY_3_URL: 'gallery-3',
+  GALLERY_4_URL: 'gallery-4',
+  GALLERY_5_URL: 'gallery-5'
+};
 
-const LOGO_URL_DATA = PLACEHOLDER_BASE64;
-const HERO_BG_URL_DATA = PLACEHOLDER_BASE64;
-const ABOUT_PORTRAIT_URL_DATA = PLACEHOLDER_BASE64;
-const GALLERY_1_URL_DATA = PLACEHOLDER_BASE64;
-const GALLERY_2_URL_DATA = PLACEHOLDER_BASE64;
-const GALLERY_3_URL_DATA = PLACEHOLDER_BASE64;
-const GALLERY_4_URL_DATA = PLACEHOLDER_BASE64;
-const GALLERY_5_URL_DATA = PLACEHOLDER_BASE64;
-
-const MANIFEST: Array<{ filename: string; base64: string }> = [
-  { filename: 'logo.jpg', base64: LOGO_URL_DATA },
-  { filename: 'hero.jpg', base64: HERO_BG_URL_DATA },
-  { filename: 'about-portrait.jpg', base64: ABOUT_PORTRAIT_URL_DATA },
-  { filename: 'gallery-1.jpg', base64: GALLERY_1_URL_DATA },
-  { filename: 'gallery-2.jpg', base64: GALLERY_2_URL_DATA },
-  { filename: 'gallery-3.jpg', base64: GALLERY_3_URL_DATA },
-  { filename: 'gallery-4.jpg', base64: GALLERY_4_URL_DATA },
-  { filename: 'gallery-5.jpg', base64: GALLERY_5_URL_DATA }
-];
+const EXTENSION_BY_MIME: Record<string, string> = {
+  jpeg: 'jpg',
+  jpg: 'jpg',
+  png: 'png'
+};
 
 function main() {
-  mkdirSync(OUTPUT_DIR, { recursive: true });
+  const source = readFileSync(ARTIFACT, 'utf8');
+  const pattern =
+    /const\s+([A-Z_0-9]+)\s*=\s*['"`]data:image\/(jpeg|jpg|png);base64,([A-Za-z0-9+/=]+)['"`]/g;
 
-  let placeholderCount = 0;
-  for (const { filename, base64 } of MANIFEST) {
-    const bytes = Buffer.from(base64, 'base64');
-    const target = join(OUTPUT_DIR, filename);
-    writeFileSync(target, bytes);
-    if (base64 === PLACEHOLDER_BASE64) placeholderCount++;
-    console.log(`wrote ${filename} (${bytes.byteLength} bytes)`);
+  const found = new Map<string, { mime: string; base64: string }>();
+  for (const match of source.matchAll(pattern)) {
+    const [, name, mime, base64] = match;
+    found.set(name, { mime, base64 });
   }
 
-  if (placeholderCount > 0) {
-    console.log('');
-    console.log(`NOTE: ${placeholderCount} of ${MANIFEST.length} images are still placeholders.`);
-    console.log('      Replace PLACEHOLDER_BASE64 references in this script with the real v9 base64 strings.');
+  const missing = Object.keys(VARIABLE_TO_FILENAME).filter((name) => !found.has(name));
+  if (missing.length > 0) {
+    console.error(`[extract-v9-images] missing variables in artifact: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+
+  mkdirSync(OUTPUT_DIR, { recursive: true });
+
+  for (const [variable, basename] of Object.entries(VARIABLE_TO_FILENAME)) {
+    const { mime, base64 } = found.get(variable)!;
+    const ext = EXTENSION_BY_MIME[mime];
+    const filename = `${basename}.${ext}`;
+    const bytes = Buffer.from(base64, 'base64');
+    writeFileSync(join(OUTPUT_DIR, filename), bytes);
+    console.log(`wrote ${filename} (${bytes.byteLength} bytes)`);
   }
 }
 
