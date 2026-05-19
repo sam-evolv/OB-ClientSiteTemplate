@@ -8,8 +8,16 @@ import { createAnonClient } from '@/lib/supabase';
  * Loads everything the marketing site needs for one business, by slug.
  *
  * Returns null when the slug does not match, the business is not
- * website_is_published, or the schema parse fails. The page-level
- * orchestrator turns null into a 404.
+ * website_is_published, the business is not is_live, or the schema
+ * parse fails. The page-level orchestrator turns null into a 404.
+ *
+ * Both flags are filtered explicitly in this query. The booking apps
+ * RLS policies on businesses (public_read_live, businesses_public_read)
+ * already permit anon SELECT where is_live = true, which Postgres
+ * OR-combines with businesses_public_read_website. To prevent the
+ * marketing site from surfacing a business that is live in the booking
+ * app but has not enabled their marketing site, the loader requires
+ * both flags directly rather than relying on the RLS layer alone.
  *
  * Three child queries run in parallel via Promise.all to minimise
  * server-side latency on the LCP path. A single .from('businesses')
@@ -27,6 +35,7 @@ export async function loadBusinessForMarketing(
     .select('*')
     .eq('slug', slug)
     .eq('website_is_published', true)
+    .eq('is_live', true)
     .maybeSingle();
 
   if (businessError) {
