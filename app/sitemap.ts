@@ -1,14 +1,18 @@
 import type { MetadataRoute } from 'next';
-import { getAllBusinessSlugs } from '../lib/business';
 
+/**
+ * Sitemap stub. Will be wired to Supabase once the schema lands in a later commit.
+ * Returns the root entry only so the route stays valid and indexable.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://openbook.ie';
-  const slugs = await getAllBusinessSlugs();
 
-  return slugs.map((slug) => ({
-    url: `${baseUrl}/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.9
-  }));
+  return [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 1.0
+    }
+  ];
 }
