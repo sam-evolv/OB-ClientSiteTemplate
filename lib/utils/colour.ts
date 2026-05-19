@@ -57,3 +57,45 @@ export function getAccentTheme(primaryColour?: string | null): CSSProperties {
     '--accent-wash': `${accent}24`
   } as CSSProperties;
 }
+
+/**
+ * Maps a named colour from the businesses.primary_colour CHECK constraint
+ * to a hex value used in CSS variable injection. Returns the value unchanged
+ * if it already looks like a hex. Falls back to the OpenBook default gold
+ * when the value is unknown or null.
+ *
+ * Source of truth for the named-colour list is the CHECK constraint
+ * `businesses_primary_colour_check` in the public.businesses table.
+ */
+const NAMED_COLOURS: Record<string, string> = {
+  gold: '#D4AF37',
+  amber: '#F59E0B',
+  ember: '#EA580C',
+  crimson: '#DC2626',
+  rose: '#F43F5E',
+  orchid: '#C026D3',
+  violet: '#8B5CF6',
+  indigo: '#6366F1',
+  azure: '#0EA5E9',
+  teal: '#14B8A6',
+  emerald: '#10B981',
+  fern: '#65A30D',
+  bronze: '#B45309',
+  walnut: '#78350F',
+  terracotta: '#C2410C',
+  sage: '#84A98C',
+  eucalyptus: '#6B7F69',
+  stone: '#A8A29E',
+  onyx: '#1C1917',
+  graphite: '#3F3F46',
+  slate: '#475569',
+  linen: '#F5F0E8',
+  pearl: '#F5F5F4',
+  cream: '#FEF3C7'
+};
+
+export function mapNamedColourToHex(value: string | null | undefined): string {
+  if (!value) return NAMED_COLOURS.gold;
+  if (isHexColor(value)) return value;
+  return NAMED_COLOURS[value] ?? NAMED_COLOURS.gold;
+}
