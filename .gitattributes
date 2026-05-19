@@ -1,0 +1,5 @@
+reference/**/*.jpg binary
+reference/**/*.jpeg binary
+reference/**/*.png binary
+reference/**/*.webp binary
+reference/**/*.avif binary

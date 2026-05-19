@@ -7,6 +7,11 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.supabase.in' },
       { protocol: 'https', hostname: 'api.mapbox.com' }
     ]
+  },
+  // Keep design reference files out of the build trace and the runtime bundle.
+  // The /reference tree is for humans, not for the app.
+  outputFileTracingExcludes: {
+    '*': ['./reference/**/*']
   }
 };
 
