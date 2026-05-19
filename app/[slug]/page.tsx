@@ -1,39 +1,15 @@
-import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { simplyGolf365 } from '@/lib/mock/simply-golf';
-import { renderSection } from '@/components/sections/render';
-
-export const revalidate = 60;
-
-type PageProps = { params: Promise<{ slug: string }> };
 
 /**
- * Single business page. Currently backed by the SIMply Golf 365 mock; the
- * Supabase loader replaces this in a later commit. Section components are
- * placeholders that render the schema-validated content with TODO markers.
+ * Foundation reset placeholder. The full MarketingPage orchestrator
+ * lands in commit 3 of the foundation correction session.
  */
-export default async function BusinessPage({ params }: PageProps) {
+export default async function BusinessPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (slug !== simplyGolf365.slug) notFound();
-
-  const business = simplyGolf365;
-  const sections = [...business.sections].sort((a, b) => a.display_order - b.display_order);
-
+  if (slug !== 'simplygolf365') notFound();
   return (
-    <main
-      className="bg-[var(--bg)] text-white min-h-screen font-serif"
-      style={{ ['--accent' as string]: business.primary_colour } as React.CSSProperties}
-    >
-      {sections.map((section) => renderSection(section, business))}
+    <main className="bg-[var(--bg)] text-white min-h-screen font-serif px-5 py-24">
+      <p className="font-mono text-xs uppercase tracking-[0.18em] opacity-50">Foundation reset, real renderer in commit 3</p>
     </main>
   );
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  if (slug !== simplyGolf365.slug) return {};
-  return {
-    title: simplyGolf365.name,
-    description: simplyGolf365.tagline ?? undefined
-  };
 }
