@@ -1,14 +1,83 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FONT_SERIF, FONT_MONO } from '@/lib/ui/fonts';
 import type { GalleryItem } from '@/lib/viewModel/businessViewModel';
 
 /**
+ * Video inside the lightbox. Opens cleanly and reliably starts playing:
+ * attempts playback with sound (the click that opened the lightbox is the user
+ * gesture), and if the browser blocks autoplay-with-sound it falls back to
+ * muted playback so the clip always moves — the user can unmute via the native
+ * controls. `playsInline` keeps it inline on iOS instead of going fullscreen.
+ */
+function LightboxVideo({ src, poster }: { src: string; poster?: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    setLoading(true);
+    const p = v.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        // Autoplay-with-sound blocked — mute and try again so it still plays.
+        v.muted = true;
+        v.play().catch(() => {});
+      });
+    }
+  }, [src]);
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <video
+        ref={ref}
+        src={src}
+        poster={poster}
+        controls
+        autoPlay
+        playsInline
+        preload="auto"
+        onLoadedData={() => setLoading(false)}
+        onPlaying={() => setLoading(false)}
+        style={{
+          maxWidth: '100%',
+          maxHeight: '78vh',
+          width: 'auto',
+          height: 'auto',
+          borderRadius: 14,
+          background: '#0c0c0c',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.6)',
+          outline: '1px solid rgba(255,255,255,0.08)',
+          display: 'block'
+        }}
+      />
+      {loading && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            border: '2px solid rgba(255,255,255,0.18)',
+            borderTopColor: 'rgba(255,255,255,0.85)',
+            animation: 'lbSpin 700ms linear infinite',
+            pointerEvents: 'none'
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
  * Lightbox — fullscreen overlay for gallery items. Keyboard ← / → / Esc, click
- * backdrop to close. Ported near-verbatim from handoff/reference/chrome.jsx.
- * Video items play inline; image items show contained. Caption in italic
- * Fraunces underneath.
+ * backdrop to close. Opens with a clean dialog zoom-fade; prev/next slide.
+ * Video items play inline (reliable autoplay + native controls); image items
+ * show contained. Caption in italic Fraunces underneath.
  */
 export function Lightbox({
   items,
@@ -20,10 +89,12 @@ export function Lightbox({
   onClose: () => void;
 }) {
   const [idx, setIdx] = useState(openIndex ?? 0);
+  // 0 = freshly opened (zoom-fade); 1 = next; -1 = prev (slide).
   const [direction, setDirection] = useState(0);
 
   useEffect(() => {
     setIdx(openIndex ?? 0);
+    setDirection(0);
   }, [openIndex]);
 
   useEffect(() => {
@@ -60,8 +131,15 @@ export function Lightbox({
   };
 
   const imgSrc = item.type === 'video' ? item.posterUrl : item.url;
+  const anim =
+    direction === 0 ? 'lbZoomIn 280ms' : `lbSlide${direction > 0 ? 'In' : 'InRev'} 300ms`;
 
-  return (
+  // Render through a portal to <body>. The gallery section has a transform (from
+  // its reveal animation), which makes a `position: fixed` descendant resolve
+  // against that section instead of the viewport — so without the portal the
+  // overlay was sized to the section (2040px tall, offset off-screen) and its
+  // z-index was trapped under the sticky nav. The portal escapes all of that.
+  const overlay = (
     <div
       onClick={onClose}
       style={{
@@ -212,29 +290,28 @@ export function Lightbox({
         onClick={(e) => e.stopPropagation()}
         style={{
           maxWidth: 'min(1100px, 92vw)',
-          maxHeight: '82vh',
+          maxHeight: '86vh',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           gap: 16,
-          animation: `lbSlide${direction >= 0 ? 'In' : 'InRev'} 300ms cubic-bezier(0.16, 1, 0.3, 1)`
+          animation: `${anim} cubic-bezier(0.16, 1, 0.3, 1)`
         }}
       >
         {item.type === 'video' && item.videoUrl ? (
-          <video
-            src={item.videoUrl}
-            poster={item.posterUrl}
-            controls
-            autoPlay
-            playsInline
-            style={{ maxWidth: '100%', maxHeight: '72vh', borderRadius: 12, background: '#0c0c0c' }}
-          />
+          <LightboxVideo src={item.videoUrl} poster={item.posterUrl} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imgSrc}
             alt={item.alt || ''}
-            style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: 12 }}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '78vh',
+              objectFit: 'contain',
+              borderRadius: 14,
+              boxShadow: '0 30px 80px rgba(0,0,0,0.55)'
+            }}
           />
         )}
 
@@ -258,9 +335,13 @@ export function Lightbox({
 
       <style>{`
         @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes lbZoomIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
         @keyframes lbSlideIn    { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes lbSlideInRev { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes lbSpin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(overlay, document.body) : null;
 }

@@ -6,11 +6,24 @@ import { FONT_SERIF, FONT_SANS } from '@/lib/ui/fonts';
 import type { CSSProperties } from 'react';
 
 /**
+ * Turns an "W/H" aspect string into a padding-bottom percentage. We size the
+ * media box with the padding-ratio hack rather than the CSS `aspect-ratio`
+ * property because iOS/WebKit can compute height 0 for an aspect-ratio box whose
+ * only child is absolutely positioned (next/image `fill`) inside a grid/flex
+ * cell — which made the gallery/about images blank on iPhone. The padding hack
+ * gives the box a real height on every engine.
+ */
+function aspectPadding(aspect: string): number {
+  const [w, h] = aspect.split('/').map((n) => parseFloat(n.trim()));
+  if (!w || !h) return 56.25; // 16/9 fallback
+  return (h / w) * 100;
+}
+
+/**
  * Image with caption-on-hover + placeholder fallback. Ported from
- * handoff/reference/chrome.jsx. The reference used a plain <img>; here the still
- * is a next/image (fill) per README §1/§9 — same rendered pixels, optimised
- * delivery. Every style value (aspect, filters, hover scale, caption gradient,
- * timings) is preserved exactly.
+ * handoff/reference/chrome.jsx; the still is a next/image (`fill`) per README
+ * §1/§9. Every style value (filters, hover scale, caption gradient, timings) is
+ * preserved.
  */
 export function BusinessImage({
   image,
@@ -36,7 +49,9 @@ export function BusinessImage({
         onMouseLeave={() => setHover(false)}
         style={{
           position: 'relative',
-          aspectRatio: aspect,
+          width: '100%',
+          height: 0,
+          paddingBottom: `${aspectPadding(aspect)}%`,
           overflow: 'hidden',
           background: '#0c0c0c',
           ...style
@@ -48,8 +63,6 @@ export function BusinessImage({
           fill
           sizes={sizes}
           style={{
-            width: '100%',
-            height: '100%',
             objectFit: 'cover',
             filter: 'contrast(1.05) saturate(0.95)',
             transform: hover ? 'scale(1.03)' : 'scale(1)',

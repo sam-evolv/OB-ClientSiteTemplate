@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useReveal } from '@/lib/hooks';
 import { scrollToSection } from '@/lib/utils/scroll';
@@ -34,6 +34,19 @@ export function Hero({
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
   }, []);
+
+  // iOS autoplay: React does not reflect `muted` as an HTML attribute, so iOS
+  // Safari treats the hero video as unmuted and refuses to autoplay (the layer
+  // stays blank over the poster). Force muted on the element and kick playback
+  // once it mounts (revealed + reduced-motion allows it).
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const vid = heroVideoRef.current;
+    if (!vid) return;
+    vid.muted = true;
+    vid.defaultMuted = true;
+    vid.play().catch(() => {});
+  }, [v, reducedMotion]);
 
   const Eyebrow = (
     <div
@@ -320,6 +333,7 @@ export function Hero({
 
         {hasVideo && !reducedMotion && (
           <video
+            ref={heroVideoRef}
             className="hero-video"
             src={b.hero_image.videoUrl as string}
             poster={b.hero_image.url}

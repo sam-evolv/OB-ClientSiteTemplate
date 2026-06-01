@@ -5,11 +5,19 @@ import Image from 'next/image';
 import { FONT_SERIF, FONT_MONO } from '@/lib/ui/fonts';
 import type { CSSProperties } from 'react';
 
+/** "W/H" → padding-bottom %. See BusinessImage for why we avoid CSS aspect-ratio. */
+function aspectPadding(aspect: string): number {
+  const [w, h] = aspect.split('/').map((n) => parseFloat(n.trim()));
+  if (!w || !h) return 56.25;
+  return (h / w) * 100;
+}
+
 /**
  * Inline video — poster + play overlay; plays muted/autoplay on tap. Ported from
- * handoff/reference/chrome.jsx. In the gallery the tiles are passed videoUrl=null
- * so the click bubbles to the parent and opens the Lightbox instead. The poster
- * still is a next/image (fill); the clip stays a real <video>.
+ * handoff/reference/chrome.jsx. In the gallery the tiles get videoUrl=null so the
+ * click bubbles to the parent and opens the Lightbox. Poster is a next/image;
+ * the clip stays a real <video>. The media box uses the padding-ratio hack so it
+ * renders on iOS/WebKit (see BusinessImage).
  */
 export function BusinessVideo({
   video,
@@ -62,7 +70,9 @@ export function BusinessVideo({
       onClick={handlePlay}
       style={{
         position: 'relative',
-        aspectRatio: aspect,
+        width: '100%',
+        height: 0,
+        paddingBottom: `${aspectPadding(aspect)}%`,
         overflow: 'hidden',
         background: '#0c0c0c',
         cursor: video.videoUrl ? 'pointer' : 'default',
@@ -76,7 +86,7 @@ export function BusinessVideo({
           controls
           autoPlay
           playsInline
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
       ) : (
         <>
@@ -85,12 +95,7 @@ export function BusinessVideo({
             alt={video.alt || ''}
             fill
             sizes={sizes}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'contrast(1.05) saturate(0.95)'
-            }}
+            style={{ objectFit: 'cover', filter: 'contrast(1.05) saturate(0.95)' }}
           />
           <div
             style={{
