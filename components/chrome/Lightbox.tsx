@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FONT_SERIF, FONT_MONO } from '@/lib/ui/fonts';
 import type { GalleryItem } from '@/lib/viewModel/businessViewModel';
 
@@ -133,7 +134,12 @@ export function Lightbox({
   const anim =
     direction === 0 ? 'lbZoomIn 280ms' : `lbSlide${direction > 0 ? 'In' : 'InRev'} 300ms`;
 
-  return (
+  // Render through a portal to <body>. The gallery section has a transform (from
+  // its reveal animation), which makes a `position: fixed` descendant resolve
+  // against that section instead of the viewport — so without the portal the
+  // overlay was sized to the section (2040px tall, offset off-screen) and its
+  // z-index was trapped under the sticky nav. The portal escapes all of that.
+  const overlay = (
     <div
       onClick={onClose}
       style={{
@@ -336,4 +342,6 @@ export function Lightbox({
       `}</style>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(overlay, document.body) : null;
 }
