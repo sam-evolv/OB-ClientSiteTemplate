@@ -71,7 +71,17 @@ export const BusinessRowSchema = z.object({
   travel_zones: z.unknown().nullable(),
   press_mentions: z.unknown().nullable(),
   trust_signals: z.unknown().nullable(),
-  venue_requirements: z.unknown().nullable()
+  venue_requirements: z.unknown().nullable(),
+
+  // Added for the SIMply Golf 365 handoff (§5 column map). All nullable so
+  // businesses that predate these columns still parse. .optional() guards the
+  // case where the live row is selected before the migration lands.
+  website_hero_variant: z.string().nullable().optional(),
+  website_about_body: z.string().nullable().optional(),
+  founder_role: z.string().nullable().optional(),
+  founder_bio: z.string().nullable().optional(),
+  instagram_url: z.string().nullable().optional(),
+  website_stats: z.unknown().nullable().optional()
 });
 
 export type BusinessRow = z.infer<typeof BusinessRowSchema>;
@@ -132,7 +142,14 @@ export const ServiceRowSchema = z.object({
   capacity: z.number().nullable(),
   is_active: z.boolean().nullable(),
   sort_order: z.number().nullable(),
-  group_name: z.string().nullable()
+  group_name: z.string().nullable(),
+
+  // Added for the handoff (§5): the marketing card shows a free-text duration
+  // ("4 hours", "5 × 60 min", "Bespoke") that does not map cleanly from
+  // duration_minutes, a "Most popular" decoy flag, and a per-group blurb.
+  duration_label: z.string().nullable().optional(),
+  is_popular: z.boolean().nullable().optional(),
+  group_blurb: z.string().nullable().optional()
 });
 export type ServiceRow = z.infer<typeof ServiceRowSchema>;
 
@@ -160,8 +177,27 @@ export const BusinessMediaSchema = z.object({
   business_id: z.string().uuid(),
   url: z.string(),
   caption: z.string().nullable(),
-  kind: z.enum(['interior', 'exterior', 'service', 'team']),
-  sort_order: z.number().nullable()
+  // The handoff uses semantic kinds (logo / hero / about / gallery) on top of
+  // the original booking-app kinds. The migration widens the CHECK constraint
+  // to allow both sets; the loader accepts any of them.
+  kind: z.enum([
+    'interior',
+    'exterior',
+    'service',
+    'team',
+    'logo',
+    'hero',
+    'about',
+    'gallery'
+  ]),
+  sort_order: z.number().nullable(),
+
+  // Added for the handoff (§5): gallery items can be image or video (poster in
+  // `url`, the clip in `video_url`), with alt text and an optional overlay label.
+  media_type: z.enum(['image', 'video']).nullable().optional(),
+  video_url: z.string().nullable().optional(),
+  alt: z.string().nullable().optional(),
+  label: z.string().nullable().optional()
 });
 export type BusinessMedia = z.infer<typeof BusinessMediaSchema>;
 

@@ -1,57 +1,97 @@
-import type { BusinessForMarketing } from '@/lib/schemas/business';
-import { Hero } from '@/components/sections/Hero';
-import { TrustBar } from '@/components/sections/TrustBar';
-import { Mission } from '@/components/sections/Mission';
-import { Services } from '@/components/sections/Services';
-import { Gallery } from '@/components/sections/Gallery';
-import { Location } from '@/components/sections/Location';
-import { About } from '@/components/sections/About';
-import { Press } from '@/components/sections/Press';
-import { Reviews } from '@/components/sections/Reviews';
-import { Contact } from '@/components/sections/Contact';
+'use client';
+
+import { useScrolledPast } from '@/lib/hooks';
+import { FONT_SERIF } from '@/lib/ui/fonts';
+import { ScrollProgress } from '@/components/chrome/ScrollProgress';
 import { StickyNav } from '@/components/chrome/StickyNav';
 import { StickyBookBar } from '@/components/chrome/StickyBookBar';
 import { Footer } from '@/components/chrome/Footer';
-import { FilmGrain } from '@/components/chrome/FilmGrain';
-import { mapNamedColourToHex } from '@/lib/utils/colour';
+import { Hero } from '@/components/sections/Hero';
+import { StatsBar } from '@/components/sections/StatsBar';
+import { Mission } from '@/components/sections/Mission';
+import { Events } from '@/components/sections/Events';
+import { About } from '@/components/sections/About';
+import { Gallery } from '@/components/sections/Gallery';
+import { WhereWeGo } from '@/components/sections/WhereWeGo';
+import { Press } from '@/components/sections/Press';
+import { Contact } from '@/components/sections/Contact';
+import type { CSSProperties } from 'react';
+import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
 
 /**
- * MarketingPage. Fixed-order render of every section. Each section
- * component decides whether it renders or returns null based on the
- * business row.
+ * MarketingPage — composes the site in the locked section order and threads the
+ * accent through every section. This is the production analogue of
+ * handoff/reference/app.jsx: the live `tweaks` object becomes fixed values
+ * (accent ← primary_colour, hero variant ← website_hero_variant, grain ← always
+ * on, fontScale ← 1.0), and section visibility is "does this business have data
+ * for that section" rather than a toggle. The Tweaks panel is not shipped.
  *
- * The page does not know what sections exist or in what order. Adding
- * a section type means adding an import and one JSX line here, plus
- * the component file.
- *
- * The accent CSS variable is injected per-page on the root <main>.
- * primary_colour on businesses is a named colour from a constrained
- * enum (pearl, gold, violet, etc.); mapNamedColourToHex returns the
- * hex for use in CSS.
+ * Locked order (README §4):
+ *   Hero → StatsBar → Mission → Events → About → Gallery → WhereWeGo → Press
+ *   → Contact → Footer
+ * Global chrome (ScrollProgress, StickyNav, StickyBookBar, film grain) sits
+ * outside the section flow.
  */
-export function MarketingPage({ data }: { data: BusinessForMarketing }) {
-  const { business, services, hours, media } = data;
-  const accent = mapNamedColourToHex(business.primary_colour);
+export function MarketingPage({ b }: { b: BusinessVM }) {
+  const scrolled = useScrolledPast(500);
+  const accent = b.primary_colour;
+
+  // Section is present iff the business has data for it. Mirrors the reference's
+  // tweaks.showX gates, driven by data instead of toggles.
+  const show = {
+    stats: b.stats.length > 0,
+    mission: Boolean(b.mission_statement),
+    events: b.service_groups.length > 0,
+    about: Boolean(b.about.body || b.about.headline || b.founder.name),
+    gallery: b.gallery.length > 0,
+    travel: Boolean(b.travel),
+    press: b.press_mentions.length > 0 || b.testimonials.length > 0,
+    contact: Boolean(b.phone || b.email)
+  };
+
+  // Nav links only point at sections that actually render.
+  const activeSections = b.sections.filter((s) => {
+    if (s.id === 'mission') return show.mission;
+    if (s.id === 'events') return show.events;
+    if (s.id === 'coaching') return show.events;
+    if (s.id === 'about') return show.about;
+    if (s.id === 'gallery') return show.gallery;
+    if (s.id === 'press') return show.press;
+    if (s.id === 'contact') return show.contact;
+    return true;
+  });
 
   return (
     <main
-      className="business-site film-grain min-h-screen bg-[var(--bg)] text-white font-serif"
-      style={{ ['--accent' as string]: accent } as React.CSSProperties}
+      className="film-grain"
+      style={
+        {
+          '--accent': accent,
+          background: '#080808',
+          color: '#fafafa',
+          fontFamily: FONT_SERIF,
+          minHeight: '100vh',
+          overflowX: 'hidden',
+          fontVariantNumeric: 'lining-nums'
+        } as CSSProperties
+      }
     >
-      <FilmGrain />
-      <StickyNav business={business} />
-      <Hero business={business} />
-      <TrustBar business={business} />
-      <Mission business={business} />
-      <Services business={business} services={services} />
-      <Gallery business={business} media={media} />
-      <Location business={business} hours={hours} />
-      <About business={business} />
-      <Press business={business} />
-      <Reviews business={business} />
-      <Contact business={business} />
-      <StickyBookBar business={business} />
-      <Footer business={business} />
+      <ScrollProgress accent={accent} />
+      <StickyNav visible={scrolled} business={b} sections={activeSections} accent={accent} />
+      <StickyBookBar visible={scrolled} accent={accent} />
+
+      <Hero b={b} accent={accent} variant={b.hero_variant} />
+
+      {show.stats && <StatsBar b={b} accent={accent} />}
+      {show.mission && <Mission b={b} accent={accent} />}
+      {show.events && <Events b={b} accent={accent} />}
+      {show.about && <About b={b} accent={accent} />}
+      {show.gallery && <Gallery b={b} accent={accent} />}
+      {show.travel && <WhereWeGo b={b} accent={accent} />}
+      {show.press && <Press b={b} accent={accent} />}
+      {show.contact && <Contact b={b} accent={accent} />}
+
+      <Footer b={b} accent={accent} />
     </main>
   );
 }
