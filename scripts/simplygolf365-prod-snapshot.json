@@ -1,0 +1,94 @@
+{
+  "_comment": "Pre-change snapshot of the SIMply Golf 365 rows on the SHARED PRODUCTION Supabase project (OpenBook, ref nrntaowmmemhjfxjqjch) taken before any migration/seed work. This is the literal revert point: to undo a future prod apply, restore these rows and re-add the original business_media_kind_check below. Captured read-only via MCP execute_sql; no production data was modified.",
+  "captured_at": "2026-06-01",
+  "project": { "name": "OpenBook", "ref": "nrntaowmmemhjfxjqjch", "organization_id": "yaacpfekobauzcgtxyzd" },
+  "constraints": {
+    "business_media_kind_check": "CHECK ((kind = ANY (ARRAY['interior'::text, 'exterior'::text, 'service'::text, 'team'::text])))"
+  },
+  "businesses_row": {
+    "id": "b34a7116-2d1f-4b08-b9da-ff067341c512",
+    "created_at": "2026-05-19 12:26:40.779696+00",
+    "owner_id": "d5835ed3-6f8a-4251-a41f-4cfae5300cc4",
+    "name": "SIMply Golf 365",
+    "slug": "simplygolf365",
+    "description": "Mobile golf simulator. Cork and Munster.",
+    "category": "golf-simulator",
+    "city": "Cork",
+    "website": "https://simplygolf365.ie",
+    "instagram_handle": "@simplygolf365",
+    "primary_colour": "pearl",
+    "logo_url": "/reference/v9-extracted/logo.jpg",
+    "hero_image_url": null,
+    "is_live": true,
+    "buffer_minutes": 15,
+    "price_tier": 2,
+    "rating": "5.0",
+    "phone": "087 409 1291",
+    "tagline": "Golf. Anywhere you want it.",
+    "about_long": "The idea came over dinner in late 2024. Jack was working in golf at Fota and Old Head, weighing up a move abroad, and did not want it. He wanted to stay in Irish golf, but bring it somewhere new. So he built it: a dome that travels, a screen that does not care about the weather, a way for the people who would never set foot on a course to have a brilliant evening playing one.",
+    "founder_name": "Jack Howard",
+    "founder_photo_url": "/reference/v9-extracted/about-portrait.jpg",
+    "year_founded": 2025,
+    "socials": {},
+    "plan": "free",
+    "website_is_published": true,
+    "website_custom_domain": "simplygolf365.ie",
+    "website_headline": "Golf, anywhere you want it.",
+    "email": "hello@simplygolf365.ie",
+    "mission_statement": "Our mission is to make premium golf experiences accessible anywhere, anytime. Using cutting-edge Foresight technology, we bring the excitement of the course to events, workplaces, and private gatherings, rain or shine, season after season. We aim to create memorable, social, and inclusive golf experiences that elevate any occasion.",
+    "mission_highlight_word": "Foresight",
+    "website_hero_headline_1": "We bring",
+    "website_hero_headline_2": "the course to you.",
+    "website_hero_subhead": "A 25-foot inflatable dome with a Foresight simulator inside. Built for events, workplaces and private gatherings, anywhere in Munster, rain or shine.",
+    "website_hero_image_url": "/reference/v9-extracted/hero.jpg",
+    "website_about_headline": "Why this exists.",
+    "travel_zones": [
+      { "name": "Cork and Munster", "label": "Zone 1, No travel fee", "is_primary": true, "description": "Cork city, county and surrounds, no travel fee." },
+      { "name": "Greater Munster", "label": "Zone 2, Small supplement", "is_primary": false, "description": "Limerick, Tipperary, Kerry, Waterford, small travel supplement." },
+      { "name": "Rest of Ireland", "label": "Anywhere else", "is_primary": false, "description": "Anywhere in Ireland, quote on enquiry." }
+    ],
+    "press_mentions": [
+      { "date": "Nov 2025", "title": "Cork's newest golf simulator experience", "outlet": "Echo Live" },
+      { "date": "Nov 2025", "title": "Jack Howard launches Simply Golf 365", "outlet": "Cork Golf News" },
+      { "date": "Dec 2025", "title": "Ireland's First Mobile Golf Simulator", "outlet": "Carrigdhoun" }
+    ],
+    "trust_signals": [
+      { "label": "PGA Professional" },
+      { "label": "Foresight simulator" },
+      { "label": "Munster and beyond" },
+      { "label": "Bookable for any event" }
+    ],
+    "venue_requirements": {
+      "items": [
+        { "stat": "8 x 8 m", "label": "Floor space" },
+        { "stat": "8 m", "label": "Ceiling height" },
+        { "stat": "Indoor", "label": "Hall, marquee or warehouse" },
+        { "stat": "Standard 13A", "label": "Power supply" }
+      ],
+      "callout": "Not sure if your venue works? Send a photo and we will confirm in under 24 hours.",
+      "eyebrow": "Venue requirements"
+    },
+    "testimonials": [
+      { "date": "2025-11-14", "role": "Corporate half-day", "quote": "Jack ran a half-day for our team, 16 of us, none of us proper golfers. The leaderboard was vicious and the craic was savage. Sorted.", "author": "Tech company team lead", "context": "Cork city, Nov 2025" }
+    ],
+    "booking_mode": "instant"
+  },
+  "services_rows": [
+    { "id": "6b35fb8c-90c1-4b69-8bae-4f8640dce775", "name": "Half-Day Corporate", "description": "Up to 20 guests. Closest-to-pin, longest-drive, team leaderboard.", "duration_minutes": 240, "price_cents": 65000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 1, "group_name": "Events and Corporate" },
+    { "id": "a71a3f4d-3657-4eef-a66b-2408846ce919", "name": "Full-Day Corporate", "description": "Team-building format. Format brief, leaderboards, prizes, branded scorecards.", "duration_minutes": 480, "price_cents": 120000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 2, "group_name": "Events and Corporate" },
+    { "id": "638b780f-73e8-4287-927b-8f077693895f", "name": "Stag / Hen Package", "description": "Group of 10 to 12. Food and drinks tie-ins available.", "duration_minutes": 180, "price_cents": 45000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 3, "group_name": "Events and Corporate" },
+    { "id": "23ce2810-e4a5-4639-b47a-568165a9df0d", "name": "Christmas Office Party", "description": "Seasonal pricing. Mulled wine package optional.", "duration_minutes": 240, "price_cents": 75000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 4, "group_name": "Events and Corporate" },
+    { "id": "6c5e09d3-5cb6-4455-8124-781e687ee954", "name": "60-min Lesson", "description": "Swing analysis, technical work, video to take home.", "duration_minutes": 60, "price_cents": 6500, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 5, "group_name": "1-to-1 Coaching" },
+    { "id": "9ee94a28-f795-4b2c-ba65-c0c0d503e08c", "name": "Lesson Block x 5", "description": "Save 45. Structured progression plan with Foresight data.", "duration_minutes": 300, "price_cents": 28000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 6, "group_name": "1-to-1 Coaching" },
+    { "id": "1e656b92-1e9b-4e89-99f0-0a89e521faf4", "name": "Ladies Get Into Golf", "description": "Introductory session for new and returning women golfers.", "duration_minutes": 60, "price_cents": 4000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 7, "group_name": "1-to-1 Coaching" },
+    { "id": "ac80002b-6906-43ff-9a04-91a6d81f7e1d", "name": "Group of 4", "description": "Compact setup. Suits home garages and small venues.", "duration_minutes": 120, "price_cents": 22000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 8, "group_name": "Private Gatherings" },
+    { "id": "445059ee-a624-4317-be0f-e35ee22f6d5f", "name": "Group of 8", "description": "The popular size. Full dome experience.", "duration_minutes": 180, "price_cents": 38000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 9, "group_name": "Private Gatherings" }
+  ],
+  "business_media_rows": [
+    { "id": "7789e389-d423-4896-aed6-db9ec9d16f60", "url": "/reference/v9-extracted/gallery-1.jpg", "caption": "Mid-swing on the Foresight simulator", "kind": "interior", "sort_order": 1 },
+    { "id": "5d0c650a-ad6e-4d6d-b52d-faded485e020", "url": "/reference/v9-extracted/gallery-2.jpg", "caption": "Inside the dome at a corporate evening event", "kind": "interior", "sort_order": 2 },
+    { "id": "c193d9df-e6a1-409c-813c-ce47722f4ce5", "url": "/reference/v9-extracted/gallery-3.jpg", "caption": "Inside the dome, a player at the tee", "kind": "interior", "sort_order": 3 },
+    { "id": "eda3f19f-18b9-4a3c-92e5-f6f2a1a31363", "url": "/reference/v9-extracted/gallery-4.jpg", "caption": "Memorable, social, inclusive, by design", "kind": "interior", "sort_order": 4 },
+    { "id": "cdc2848c-78e2-44e8-8328-84dfaac7484d", "url": "/reference/v9-extracted/gallery-5.jpg", "caption": "Setup. Two hours from van to first shot.", "kind": "interior", "sort_order": 5 }
+  ]
+}

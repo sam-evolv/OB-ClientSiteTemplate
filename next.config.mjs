@@ -9,9 +9,9 @@ const nextConfig = {
     ]
   },
   // Keep design reference files out of the build trace and the runtime bundle.
-  // The /reference tree is for humans, not for the app.
+  // The /reference and /handoff trees are for humans, not for the app.
   outputFileTracingExcludes: {
-    '*': ['./reference/**/*']
+    '*': ['./reference/**/*', './handoff/**/*']
   }
 };
 

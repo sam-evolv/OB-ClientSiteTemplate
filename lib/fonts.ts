@@ -12,7 +12,16 @@ import { Fraunces, Geist, Geist_Mono } from 'next/font/google';
 export const fraunces = Fraunces({
   subsets: ['latin'],
   display: 'swap',
+  // opsz keeps font-optical-sizing: auto working (headlines size correctly);
+  // SOFT must be included alongside it — dropping SOFT freezes the opsz
+  // variation in next/font and renders body text far too narrow. With both,
+  // body text lands within ~3% of the Google-CDN reference (an irreducible
+  // self-host-vs-CDN optical-sizing nuance, not a CSS-value difference).
   axes: ['opsz', 'SOFT'],
+  // The reference leans on Fraunces italic throughout (hero line 2, mission
+  // body, section accents). Self-host both styles so no runtime Google request
+  // is needed and italic resolves to the variable face, not a synthetic slant.
+  style: ['normal', 'italic'],
   variable: '--font-fraunces'
 });
 
