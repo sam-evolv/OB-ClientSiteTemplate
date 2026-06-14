@@ -65,6 +65,11 @@ export const simplyGolf: BusinessVM = {
     further: 'Anywhere in Ireland — quote on enquiry.'
   },
 
+  // Mobile business: no fixed address or opening hours. The LocationHours
+  // section is gated on `location`, so it stays hidden for SIMply Golf.
+  location: null,
+  hours: [],
+
   venue_requirements: [
     { stat: '8 × 8 m', label: 'Floor space' },
     { stat: '8 m', label: 'Ceiling height' },

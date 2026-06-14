@@ -18,7 +18,8 @@ import type {
   BusinessForMarketing,
   BusinessRow,
   ServiceRow,
-  BusinessMedia
+  BusinessMedia,
+  BusinessHour
 } from '@/lib/schemas/business';
 
 export type HeroVariant = 'photo' | 'split' | 'type';
@@ -73,6 +74,30 @@ export type TravelVM = {
   further: string;
 } | null;
 
+/**
+ * Fixed-location address, for place-based businesses (salons, gyms, physios).
+ * Null when the business is mobile (uses TravelVM instead). A business has
+ * EITHER an address (fixed) OR travel_zones (mobile).
+ */
+export type LocationVM = {
+  address: string;
+  address_line: string;
+  city: string;
+} | null;
+
+/**
+ * One day of opening hours, pre-formatted for display. `open` is the
+ * authoritative flag (mirrors how the OpenBook booking app reads
+ * business_hours.is_open): a day is open only when is_open === true. `display`
+ * holds the formatted range ("6am – 8pm") when open and is empty when closed,
+ * so the component renders "Closed".
+ */
+export type HoursDayVM = {
+  label: string;
+  open: boolean;
+  display: string;
+};
+
 export type BusinessVM = {
   name: string;
   slug: string;
@@ -89,6 +114,8 @@ export type BusinessVM = {
   mission_statement: string;
   mission_highlight_word: string;
   travel: TravelVM;
+  location: LocationVM;
+  hours: HoursDayVM[];
   venue_requirements: VenueRequirementVM[];
   phone: string;
   email: string;
@@ -191,6 +218,71 @@ function toGallery(media: BusinessMedia[]): GalleryItem[] {
     });
 }
 
+/** Fixed-location address from the business row, or null when mobile. */
+function toLocation(b: BusinessRow): LocationVM {
+  const address = (b.address ?? '').trim();
+  if (!address) return null;
+  return {
+    address,
+    address_line: (b.address_line ?? '').trim(),
+    city: (b.city ?? '').trim()
+  };
+}
+
+const WEEKDAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+];
+
+// Display order is Monday-first. business_hours.day_of_week follows the
+// Postgres/JS convention (0 = Sunday … 6 = Saturday), confirmed against the
+// OpenBook booking app, which labels day_of_week 1 as Monday.
+const WEEK_DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+/** "06:00:00" -> "6am", "20:00:00" -> "8pm", "09:30:00" -> "9:30am". */
+function formatTime(value: string | null): string {
+  if (!value) return '';
+  const [hStr, mStr] = value.split(':');
+  const h = Number(hStr);
+  const m = Number(mStr ?? '0');
+  if (Number.isNaN(h)) return '';
+  const suffix = h < 12 ? 'am' : 'pm';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return m ? `${hour12}:${String(m).padStart(2, '0')}${suffix}` : `${hour12}${suffix}`;
+}
+
+function formatRange(open: string | null, close: string | null): string {
+  const o = formatTime(open);
+  const c = formatTime(close);
+  if (o && c) return `${o} – ${c}`;
+  return o || c || '';
+}
+
+/**
+ * The week's opening hours, Monday-first, each day pre-formatted. A day is open
+ * only when business_hours.is_open === true; closed days (including days with
+ * no row) get open: false and an empty display, which the component renders as
+ * "Closed". This matches how the OpenBook booking app interprets the rows.
+ */
+function toHours(hours: BusinessHour[]): HoursDayVM[] {
+  const byDay = new Map<number, BusinessHour>();
+  for (const h of hours) byDay.set(h.day_of_week, h);
+  return WEEK_DISPLAY_ORDER.map((dow) => {
+    const row = byDay.get(dow);
+    const open = row?.is_open === true;
+    return {
+      label: WEEKDAY_NAMES[dow],
+      open,
+      display: open ? formatRange(row?.open_time ?? null, row?.close_time ?? null) : ''
+    };
+  });
+}
+
 const DEFAULT_SECTIONS: SectionLink[] = [
   { id: 'mission', label: 'Mission' },
   { id: 'events', label: 'Events' },
@@ -235,6 +327,8 @@ export function toBusinessViewModel(
     mission_statement: b.mission_statement ?? '',
     mission_highlight_word: b.mission_highlight_word ?? '',
     travel,
+    location: toLocation(b),
+    hours: toHours(data.hours),
     venue_requirements: asArray<VenueRequirementVM>(b.venue_requirements),
     phone: b.phone ?? '',
     email: b.email ?? '',
