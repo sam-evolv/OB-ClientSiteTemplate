@@ -47,7 +47,10 @@ export default async function RootPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get('host');
   const b = await resolveRoot();
   if (!b) return {};
-  return buildMetadata(b);
+  // The root route is the canonical host-based route: indexable only when this
+  // host is the tenant's own custom domain.
+  return buildMetadata(b, { host, canonicalRoute: true });
 }

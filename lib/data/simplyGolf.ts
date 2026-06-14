@@ -22,6 +22,10 @@ export const simplyGolf: BusinessVM = {
   // ── Identity ──────────────────────────────────────────────────────────────
   name: 'SIMply Golf 365',
   slug: 'simplygolf365',
+  // Canonical custom domain, matching the live businesses row. Used for JSON-LD
+  // url and the canonical/indexability decision (the local/preview host never
+  // equals this, so dev stays noindex).
+  custom_domain: 'simplygolf365.ie',
   category: 'golf-simulator',
   founded: 2025,
 

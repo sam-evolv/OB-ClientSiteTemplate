@@ -90,17 +90,22 @@ export type LocationVM = {
  * authoritative flag (mirrors how the OpenBook booking app reads
  * business_hours.is_open): a day is open only when is_open === true. `display`
  * holds the formatted range ("6am – 8pm") when open and is empty when closed,
- * so the component renders "Closed".
+ * so the component renders "Closed". `opens`/`closes` keep the raw 24h "HH:MM"
+ * times for schema.org openingHoursSpecification (empty when closed).
  */
 export type HoursDayVM = {
   label: string;
   open: boolean;
   display: string;
+  opens: string;
+  closes: string;
 };
 
 export type BusinessVM = {
   name: string;
   slug: string;
+  /** The tenant's canonical custom domain (e.g. "simplygolf365.ie"), or null. */
+  custom_domain: string | null;
   category: string;
   founded: number | null;
   primary_colour: string;
@@ -263,6 +268,14 @@ function formatRange(open: string | null, close: string | null): string {
   return o || c || '';
 }
 
+/** "06:00:00" -> "06:00" (24h HH:MM for schema.org). Empty when absent. */
+function hhmm(value: string | null): string {
+  if (!value) return '';
+  const [h, m] = value.split(':');
+  if (h === undefined) return '';
+  return `${h.padStart(2, '0')}:${(m ?? '00').padStart(2, '0')}`;
+}
+
 /**
  * The week's opening hours, Monday-first, each day pre-formatted. A day is open
  * only when business_hours.is_open === true; closed days (including days with
@@ -278,7 +291,9 @@ function toHours(hours: BusinessHour[]): HoursDayVM[] {
     return {
       label: WEEKDAY_NAMES[dow],
       open,
-      display: open ? formatRange(row?.open_time ?? null, row?.close_time ?? null) : ''
+      display: open ? formatRange(row?.open_time ?? null, row?.close_time ?? null) : '',
+      opens: open ? hhmm(row?.open_time ?? null) : '',
+      closes: open ? hhmm(row?.close_time ?? null) : ''
     };
   });
 }
@@ -307,6 +322,7 @@ export function toBusinessViewModel(
   return {
     name: b.name,
     slug: b.slug,
+    custom_domain: b.website_custom_domain ?? null,
     category: b.category,
     founded: b.year_founded ?? null,
     primary_colour: accentHex,

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { MarketingPage } from '@/components/MarketingPage';
 import { resolveBySlug, buildJsonLd, buildMetadata } from '@/lib/business/resolve';
@@ -32,5 +33,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const b = await resolveBySlug(slug);
   if (!b) return {};
-  return buildMetadata(b);
+  // The slug route is never the canonical host, so it is always noindex and
+  // canonicalises to the tenant's custom domain (when one is set).
+  const host = (await headers()).get('host');
+  return buildMetadata(b, { host, canonicalRoute: false });
 }
