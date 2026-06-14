@@ -58,6 +58,30 @@ export async function resolveByHost(host: string | null): Promise<BusinessVM | n
   }
 }
 
+/**
+ * Hosts that may fall back to the demo business when no tenant maps to them.
+ * These are non-customer hosts only: local dev and Vercel preview/deployment
+ * URLs (`*.vercel.app`), plus anything listed in NEXT_PUBLIC_DEMO_FALLBACK_HOSTS.
+ *
+ * A real customer domain that is not yet mapped is deliberately NOT in this set,
+ * so the root route renders a clean 404 placeholder for it rather than leaking
+ * the demo tenant's content onto an unconfigured domain. A null/empty host
+ * (build-time render, internal prefetch) is treated as a fallback host because
+ * it is never a real customer request.
+ */
+export function isDemoFallbackHost(host: string | null): boolean {
+  if (!host) return true;
+  const h = host.split(':')[0].trim().toLowerCase();
+  if (!h) return true;
+  if (h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || h === '::1') return true;
+  if (h.endsWith('.vercel.app')) return true;
+  const extra = (process.env.NEXT_PUBLIC_DEMO_FALLBACK_HOSTS ?? '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return extra.includes(h);
+}
+
 /** LocalBusiness JSON-LD for a resolved business. */
 export function buildJsonLd(b: BusinessVM) {
   return {
