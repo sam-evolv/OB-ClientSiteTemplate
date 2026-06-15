@@ -4,10 +4,22 @@ import { toBusinessViewModel, type BusinessVM } from '@/lib/viewModel/businessVi
 import { mapNamedColourToHex } from '@/lib/utils/colour';
 import { simplyGolf } from '@/lib/data/simplyGolf';
 import { createAnonClient } from '@/lib/supabase';
-import { normalizeHost, hostMatchesDomain, googleSiteVerification } from './host';
+import {
+  normalizeHost,
+  hostMatchesDomain,
+  googleSiteVerification,
+  subdomainLabel,
+  resolveTenantByHost
+} from './host';
 
-// Re-exported so existing importers (and tests) can reach the normaliser.
-export { normalizeHost, hostMatchesDomain, googleSiteVerification };
+// Re-exported so existing importers (and tests) can reach the pure host helpers.
+export {
+  normalizeHost,
+  hostMatchesDomain,
+  googleSiteVerification,
+  subdomainLabel,
+  resolveTenantByHost
+};
 
 /**
  * Business resolution for the marketing site. Shared by the slug route and the
@@ -23,6 +35,21 @@ export const DEMO_SLUG = simplyGolf.slug;
 
 export function supabaseConfigured(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
+/**
+ * The platform parent domain for subdomain-based tenant routing (e.g.
+ * "openbook.ie"), read from NEXT_PUBLIC_PLATFORM_DOMAIN and normalised (port
+ * dropped, lowercased, a leading "www." tolerated). Empty when unset — and while
+ * it is empty, subdomain routing is inert and host resolution behaves exactly as
+ * it did before this feature.
+ */
+export function platformDomain(): string {
+  return (process.env.NEXT_PUBLIC_PLATFORM_DOMAIN ?? '')
+    .split(':')[0]
+    .trim()
+    .toLowerCase()
+    .replace(/^www\./, '');
 }
 
 /** Resolve a business by its slug. */
@@ -75,6 +102,26 @@ export async function resolveByHost(host: string | null): Promise<BusinessVM | n
 }
 
 /**
+ * Resolve the tenant whose OWN canonical host is `host`, in precedence order:
+ *   1. an exact custom-domain match (resolveByHost, README §9) — unchanged, and
+ *   2. the platform subdomain "<slug>.<PARENT>", where PARENT comes from
+ *      NEXT_PUBLIC_PLATFORM_DOMAIN, looked up by slug.
+ *
+ * The custom-domain match is tried first and wins, so the live custom-domain
+ * sites (e.g. www.simplygolf365.ie) resolve exactly as before. Returns null when
+ * no real tenant claims the host — there is NO demo fallback here, so callers
+ * that must never advertise the demo tenant onto a preview/marketing host (the
+ * sitemap) get an empty result. The bare parent and "www.<PARENT>" resolve to
+ * null (subdomainLabel rejects them): they are the marketing root, not tenants.
+ */
+export function resolveCanonicalTenant(host: string | null): Promise<BusinessVM | null> {
+  return resolveTenantByHost(host, platformDomain(), {
+    byCustomDomain: resolveByHost,
+    bySlug: resolveBySlug
+  });
+}
+
+/**
  * Hosts that may fall back to the demo business when no tenant maps to them.
  * These are non-customer hosts only: local dev and Vercel preview/deployment
  * URLs (`*.vercel.app`), plus anything listed in NEXT_PUBLIC_DEMO_FALLBACK_HOSTS.
@@ -98,9 +145,46 @@ export function isDemoFallbackHost(host: string | null): boolean {
   return extra.includes(h);
 }
 
+/**
+ * Full root-route resolution for a request host, in precedence order:
+ *   1. the tenant whose canonical host this is — custom domain, then platform
+ *      subdomain (resolveCanonicalTenant), then
+ *   2. the demo business on preview/build hosts (localhost, *.vercel.app, …),
+ *      else
+ *   3. null — a clean 404 for an unmapped customer host.
+ *
+ * Centralises the precedence shared by the root page and its metadata so the
+ * page and generateMetadata always resolve identically.
+ */
+export async function resolveForHost(host: string | null): Promise<BusinessVM | null> {
+  const tenant = await resolveCanonicalTenant(host);
+  if (tenant) return tenant;
+  return isDemoFallbackHost(host) ? resolveBySlug(DEMO_SLUG) : null;
+}
+
 /** The tenant's canonical origin (https://<custom_domain>), or null when no domain is set. */
 function canonicalOrigin(b: BusinessVM): string | null {
   return b.custom_domain ? `https://${b.custom_domain}` : null;
+}
+
+/**
+ * A tenant's canonical absolute origin for a given request host:
+ *   - its custom domain when set (always wins — a tenant with both a custom
+ *     domain and a platform subdomain keeps the same canonical it has today), else
+ *   - its platform subdomain "https://<slug>.<PARENT>" when THIS request is being
+ *     served on that subdomain, else
+ *   - null.
+ *
+ * Shared by buildMetadata and the sitemap so the canonical link, the sitemap URL
+ * and indexability all agree on what a tenant's canonical URL is for the host.
+ */
+export function canonicalOriginForHost(b: BusinessVM, host: string | null | undefined): string | null {
+  if (b.custom_domain) return `https://${b.custom_domain}`;
+  const parent = platformDomain();
+  if (parent && b.slug && subdomainLabel(host, parent) === b.slug) {
+    return `https://${b.slug}.${parent}`;
+  }
+  return null;
 }
 
 /** Resolve a possibly-relative media path to an absolute URL on the canonical origin. */
@@ -198,22 +282,30 @@ export function buildJsonLd(b: BusinessVM) {
 /**
  * Host-aware SEO metadata for a resolved business.
  *
- * Exactly one URL per tenant is indexable: the canonical custom-domain root,
- * served by the host-based root route. Every other host — the slug route, the
- * demo fallback on localhost/*.vercel.app, or a tenant with no custom domain
- * yet (e.g. evolv-performance today) — is noindex and canonicalised to the
- * custom domain when one exists, so previews and not-yet-live tenants stay out
- * of the index and slug/preview URLs never compete with the canonical site.
+ * A tenant is indexable only on its OWN canonical host, served by the host-based
+ * root route: its custom domain, OR — when no custom domain is mapped yet — its
+ * platform subdomain "<slug>.<PARENT>" (NEXT_PUBLIC_PLATFORM_DOMAIN). The
+ * canonical link points at that same host (custom domain when set, else the
+ * subdomain). Every other host — the slug route, the demo fallback on
+ * localhost/*.vercel.app, or any non-canonical host — is noindex and
+ * canonicalised to the tenant's canonical origin, so previews and slug/preview
+ * URLs never compete with the canonical site. While NEXT_PUBLIC_PLATFORM_DOMAIN
+ * is unset the subdomain branch is inert and this behaves exactly as before.
  */
 export function buildMetadata(
   b: BusinessVM,
   opts: { host?: string | null; canonicalRoute?: boolean } = {}
 ): Metadata {
-  const origin = canonicalOrigin(b);
+  const parent = platformDomain();
+  const onCustomDomain = Boolean(b.custom_domain && hostMatchesDomain(opts.host, b.custom_domain));
+  const onSubdomain = Boolean(parent && b.slug && subdomainLabel(opts.host, parent) === b.slug);
+
+  const origin = canonicalOriginForHost(b, opts.host);
   const canonical = origin ? `${origin}/` : undefined;
-  const indexable = Boolean(
-    opts.canonicalRoute && b.custom_domain && hostMatchesDomain(opts.host, b.custom_domain)
-  );
+  // Indexable only on the tenant's own canonical host (custom domain or platform
+  // subdomain), and only via the canonical root route — the slug route and the
+  // demo/preview fallback stay noindex.
+  const indexable = Boolean(opts.canonicalRoute && (onCustomDomain || onSubdomain));
 
   const title = b.tagline ? `${b.name} — ${b.tagline}` : b.name;
   const description = b.hero_subhead || b.tagline || undefined;
