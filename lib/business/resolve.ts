@@ -9,7 +9,10 @@ import {
   hostMatchesDomain,
   googleSiteVerification,
   subdomainLabel,
-  resolveTenantByHost
+  resolveTenantByHost,
+  tenantCanonicalOrigin,
+  isPlatformRootHost,
+  tenantSitemapIndexLocs
 } from './host';
 
 // Re-exported so existing importers (and tests) can reach the pure host helpers.
@@ -18,7 +21,10 @@ export {
   hostMatchesDomain,
   googleSiteVerification,
   subdomainLabel,
-  resolveTenantByHost
+  resolveTenantByHost,
+  tenantCanonicalOrigin,
+  isPlatformRootHost,
+  tenantSitemapIndexLocs
 };
 
 /**
@@ -119,6 +125,40 @@ export function resolveCanonicalTenant(host: string | null): Promise<BusinessVM 
     byCustomDomain: resolveByHost,
     bySlug: resolveBySlug
   });
+}
+
+/**
+ * Every published + live tenant for the master sitemap index — slug + custom
+ * domain only, in ONE query. The platform-root sitemap turns these into a
+ * <sitemapindex> over each tenant's own sitemap (custom domain when set, else
+ * its "<slug>.<PARENT>" subdomain) via tenantSitemapIndexLocs.
+ *
+ * In demo / no-Supabase mode, returns the bundled demo business so previews
+ * still produce a non-empty index. Returns [] on any query error.
+ */
+export async function listPublishedTenants(): Promise<
+  { slug: string; customDomain: string | null }[]
+> {
+  if (!supabaseConfigured()) {
+    return [{ slug: simplyGolf.slug, customDomain: simplyGolf.custom_domain }];
+  }
+  try {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('slug, website_custom_domain')
+      .eq('website_is_published', true)
+      .eq('is_live', true);
+    if (error || !data) return [];
+    return data
+      .map((r) => ({
+        slug: (r.slug as string | null) ?? null,
+        customDomain: (r.website_custom_domain as string | null) ?? null
+      }))
+      .filter((t): t is { slug: string; customDomain: string | null } => Boolean(t.slug));
+  } catch {
+    return [];
+  }
 }
 
 /**

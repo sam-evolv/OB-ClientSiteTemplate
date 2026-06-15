@@ -21,7 +21,10 @@ const AI_AND_SEARCH_BOTS = [
   'Bingbot'
 ];
 
-// Host-aware so each tenant domain points at its own sitemap.
+// Host-aware so each host advertises its OWN /sitemap.xml: a tenant domain points
+// at its per-tenant sitemap, and the platform root (sites.openbook.ie) points at
+// the master sitemap index served at the same path. Both are "<host>/sitemap.xml",
+// so this single directive is correct for every host.
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const host = (await headers()).get('host')?.split(':')[0];
   const base = host ? `https://${host}` : process.env.NEXT_PUBLIC_SITE_URL || 'https://openbook.ie';

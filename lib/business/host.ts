@@ -116,3 +116,61 @@ export async function resolveTenantByHost<T>(
   if (!label) return null;
   return (await resolvers.bySlug(label)) ?? null;
 }
+
+// --- Master sitemap index (served at the platform root) ----------------------
+
+/**
+ * A tenant's canonical absolute origin, UNCONDITIONALLY: its custom domain when
+ * set, else its platform subdomain "https://<slug>.<parent>". Null when it has
+ * neither (no custom domain, and no platform parent configured to build a
+ * subdomain).
+ *
+ * This is the tenant's canonical home regardless of which host is being served,
+ * so it is what the master sitemap index lists. The per-request, host-GATED
+ * variant — which yields the subdomain only when the request is actually on it —
+ * is resolve.ts's canonicalOriginForHost, used for per-tenant canonical/metadata.
+ */
+export function tenantCanonicalOrigin(
+  tenant: { slug?: string | null; customDomain?: string | null },
+  parentDomain: string | null | undefined
+): string | null {
+  if (tenant.customDomain) return `https://${tenant.customDomain}`;
+  const parent = normalizeHost(parentDomain);
+  return parent && tenant.slug ? `https://${tenant.slug}.${parent}` : null;
+}
+
+/**
+ * True when `host` is the platform root itself — the bare parent domain or its
+ * "www." form (e.g. "sites.openbook.ie" / "www.sites.openbook.ie"). That host is
+ * the marketing root, never a tenant; it is where the master sitemap index is
+ * served. False when the platform domain is unset, keeping the feature inert.
+ */
+export function isPlatformRootHost(
+  host: string | null | undefined,
+  parentDomain: string | null | undefined
+): boolean {
+  const parent = normalizeHost(parentDomain);
+  return parent !== '' && normalizeHost(host) === parent;
+}
+
+/**
+ * The master sitemap-index entries for a set of published+live tenants: one
+ * <loc> per tenant, each the tenant's OWN sitemap URL — its canonical origin
+ * (custom domain, else platform subdomain "<slug>.<parent>") + "/sitemap.xml",
+ * which is exactly the per-tenant sitemap that host already serves.
+ *
+ * Pure: derived from slug + custom domain + the platform parent only. Tenants
+ * that can be placed at neither a custom domain nor a "<slug>.<parent>" subdomain
+ * are skipped; duplicate locs are collapsed, order preserved.
+ */
+export function tenantSitemapIndexLocs(
+  tenants: { slug?: string | null; customDomain?: string | null }[],
+  parentDomain: string | null | undefined
+): string[] {
+  const locs: string[] = [];
+  for (const t of tenants) {
+    const origin = tenantCanonicalOrigin(t, parentDomain);
+    if (origin) locs.push(`${origin}/sitemap.xml`);
+  }
+  return Array.from(new Set(locs));
+}

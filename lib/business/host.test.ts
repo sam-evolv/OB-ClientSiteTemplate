@@ -5,7 +5,10 @@ import {
   hostMatchesDomain,
   googleSiteVerification,
   subdomainLabel,
-  resolveTenantByHost
+  resolveTenantByHost,
+  tenantCanonicalOrigin,
+  isPlatformRootHost,
+  tenantSitemapIndexLocs
 } from './host.ts';
 
 // resolveByHost matches a request host against each tenant's stored
@@ -199,4 +202,83 @@ test('resolveTenantByHost is inert when the platform parent domain is unset', as
   const { resolvers, calls } = makeResolvers();
   assert.equal(await resolveTenantByHost('simplygolf365.openbook.ie', '', resolvers), null);
   assert.deepEqual(calls.bySlug, []); // no parent -> no subdomain lookup
+});
+
+// --- Master sitemap index (platform root) ------------------------------------
+
+test('tenantCanonicalOrigin returns the custom domain when set (it always wins)', () => {
+  assert.equal(
+    tenantCanonicalOrigin({ slug: 'simplygolf365', customDomain: 'www.simplygolf365.ie' }, 'sites.openbook.ie'),
+    'https://www.simplygolf365.ie'
+  );
+});
+
+test('tenantCanonicalOrigin falls back to the platform subdomain when there is no custom domain', () => {
+  assert.equal(
+    tenantCanonicalOrigin({ slug: 'evolv-performance', customDomain: null }, 'sites.openbook.ie'),
+    'https://evolv-performance.sites.openbook.ie'
+  );
+  // parent normalised: www/case/port tolerated
+  assert.equal(
+    tenantCanonicalOrigin({ slug: 'evolv-performance', customDomain: null }, 'WWW.Sites.OpenBook.ie:443'),
+    'https://evolv-performance.sites.openbook.ie'
+  );
+});
+
+test('tenantCanonicalOrigin is null when a domainless tenant has no platform parent or slug', () => {
+  assert.equal(tenantCanonicalOrigin({ slug: 'evolv-performance', customDomain: null }, ''), null);
+  assert.equal(tenantCanonicalOrigin({ slug: null, customDomain: null }, 'sites.openbook.ie'), null);
+});
+
+test('isPlatformRootHost matches the bare parent and its www. form, and NOTHING else', () => {
+  const P = 'sites.openbook.ie';
+  assert.equal(isPlatformRootHost('sites.openbook.ie', P), true);
+  assert.equal(isPlatformRootHost('www.sites.openbook.ie', P), true);
+  assert.equal(isPlatformRootHost('SITES.OpenBook.ie:443', P), true);
+  // a tenant subdomain, a custom domain, and a preview host are NOT the root
+  assert.equal(isPlatformRootHost('simplygolf365.sites.openbook.ie', P), false);
+  assert.equal(isPlatformRootHost('www.simplygolf365.ie', P), false);
+  assert.equal(isPlatformRootHost('localhost', P), false);
+  assert.equal(isPlatformRootHost(null, P), false);
+  assert.equal(isPlatformRootHost('sites.openbook.ie', ''), false); // inert when parent unset
+});
+
+test('tenantSitemapIndexLocs lists each tenant’s own sitemap (custom domain or subdomain)', () => {
+  const locs = tenantSitemapIndexLocs(
+    [
+      { slug: 'simplygolf365', customDomain: 'www.simplygolf365.ie' }, // has a custom domain
+      { slug: 'evolv-performance', customDomain: null } // subdomain-only
+    ],
+    'sites.openbook.ie'
+  );
+  // the master index contains a known published tenant's canonical URL
+  assert.deepEqual(locs, [
+    'https://www.simplygolf365.ie/sitemap.xml',
+    'https://evolv-performance.sites.openbook.ie/sitemap.xml'
+  ]);
+});
+
+test('tenantSitemapIndexLocs skips unplaceable tenants and de-duplicates', () => {
+  const locs = tenantSitemapIndexLocs(
+    [
+      { slug: 'a', customDomain: null },
+      { slug: 'a', customDomain: null }, // duplicate -> collapsed
+      { slug: null, customDomain: null }, // no slug, no domain -> skipped
+      { slug: 'b', customDomain: 'b.ie' }
+    ],
+    'sites.openbook.ie'
+  );
+  assert.deepEqual(locs, ['https://a.sites.openbook.ie/sitemap.xml', 'https://b.ie/sitemap.xml']);
+});
+
+test('tenantSitemapIndexLocs needs the parent only for subdomain tenants; custom-domain tenants still list', () => {
+  // parent unset: a subdomain-only tenant is skipped, a custom-domain tenant remains
+  const locs = tenantSitemapIndexLocs(
+    [
+      { slug: 'sub-only', customDomain: null },
+      { slug: 'has-domain', customDomain: 'has-domain.ie' }
+    ],
+    ''
+  );
+  assert.deepEqual(locs, ['https://has-domain.ie/sitemap.xml']);
 });
