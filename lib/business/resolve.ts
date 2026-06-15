@@ -4,6 +4,10 @@ import { toBusinessViewModel, type BusinessVM } from '@/lib/viewModel/businessVi
 import { mapNamedColourToHex } from '@/lib/utils/colour';
 import { simplyGolf } from '@/lib/data/simplyGolf';
 import { createAnonClient } from '@/lib/supabase';
+import { normalizeHost, hostMatchesDomain } from './host';
+
+// Re-exported so existing importers (and tests) can reach the normaliser.
+export { normalizeHost, hostMatchesDomain };
 
 /**
  * Business resolution for the marketing site. Shared by the slug route and the
@@ -34,25 +38,37 @@ export async function resolveBySlug(slug: string): Promise<BusinessVM | null> {
 
 /**
  * Resolve a business by request host via the website_custom_domain column
- * (README §9). e.g. simplygolf365.ie → the simplygolf365 business. Returns null
- * for hosts with no mapping (the bare template/preview domain), so the caller
- * can fall back to the demo business.
+ * (README §9). e.g. simplygolf365.ie → the simplygolf365 business.
+ *
+ * Matching is www-, case- and port-insensitive on BOTH sides: the apex and the
+ * "www." variant of a domain resolve to the same tenant regardless of which
+ * variant the row stores (the apex 307-redirects to www. in production, so the
+ * served host and the stored value can legitimately differ). Returns null for
+ * hosts with no mapping, so the caller can fall back to the demo business or
+ * 404.
  */
 export async function resolveByHost(host: string | null): Promise<BusinessVM | null> {
-  if (!host || !supabaseConfigured()) return null;
-  const domain = host.split(':')[0].trim().toLowerCase().replace(/^www\./, '');
-  if (!domain) return null;
+  if (!supabaseConfigured()) return null;
+  const target = normalizeHost(host);
+  if (!target) return null;
   try {
     const supabase = createAnonClient();
+    // Fetch the (small) set of published, live tenants that have a custom
+    // domain, then match in JS with the shared normaliser. This resolves apex,
+    // www. and case variants whichever way the row is stored, and never
+    // interpolates the untrusted Host header into the query (no filter
+    // injection). The set is bounded by the number of domained tenants; a
+    // generated normalised column + indexed lookup is the path at larger scale.
     const { data, error } = await supabase
       .from('businesses')
-      .select('slug')
-      .eq('website_custom_domain', domain)
+      .select('slug, website_custom_domain')
+      .not('website_custom_domain', 'is', null)
       .eq('website_is_published', true)
-      .eq('is_live', true)
-      .maybeSingle();
-    if (error || !data?.slug) return null;
-    return resolveBySlug(data.slug);
+      .eq('is_live', true);
+    if (error || !data) return null;
+    const match = data.find((row) => hostMatchesDomain(target, row.website_custom_domain));
+    if (!match?.slug) return null;
+    return resolveBySlug(match.slug);
   } catch {
     return null;
   }
@@ -80,12 +96,6 @@ export function isDemoFallbackHost(host: string | null): boolean {
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
   return extra.includes(h);
-}
-
-/** Normalize a Host header for comparison: drop port, lowercase, strip leading www. */
-export function normalizeHost(host: string | null | undefined): string {
-  if (!host) return '';
-  return host.split(':')[0].trim().toLowerCase().replace(/^www\./, '');
 }
 
 /** The tenant's canonical origin (https://<custom_domain>), or null when no domain is set. */
@@ -202,7 +212,7 @@ export function buildMetadata(
   const origin = canonicalOrigin(b);
   const canonical = origin ? `${origin}/` : undefined;
   const indexable = Boolean(
-    opts.canonicalRoute && b.custom_domain && normalizeHost(opts.host) === b.custom_domain
+    opts.canonicalRoute && b.custom_domain && hostMatchesDomain(opts.host, b.custom_domain)
   );
 
   const title = b.tagline ? `${b.name} — ${b.tagline}` : b.name;
