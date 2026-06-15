@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeHost, hostMatchesDomain } from './host.ts';
+import { normalizeHost, hostMatchesDomain, googleSiteVerification } from './host.ts';
 
 // resolveByHost matches a request host against each tenant's stored
 // website_custom_domain by composing hostMatchesDomain over the published rows,
@@ -49,4 +49,41 @@ test('hostMatchesDomain rejects unrelated, empty and nullish values', () => {
   assert.equal(hostMatchesDomain(null, 'simplygolf365.ie'), false);
   assert.equal(hostMatchesDomain('simplygolf365.ie', null), false);
   assert.equal(hostMatchesDomain(null, null), false);
+});
+
+// --- Google Search Console verification token (per-tenant <meta> content) ---
+
+test('googleSiteVerification returns the token for the matched tenant (the meta content)', () => {
+  // www/apex symmetric, like host matching, so it works whichever variant is stored.
+  assert.equal(
+    googleSiteVerification('tok_ABC123', 'www.simplygolf365.ie', 'www.simplygolf365.ie'),
+    'tok_ABC123'
+  );
+  assert.equal(
+    googleSiteVerification('tok_ABC123', 'simplygolf365.ie', 'www.simplygolf365.ie'),
+    'tok_ABC123'
+  );
+  assert.equal(
+    googleSiteVerification('tok_ABC123', 'www.simplygolf365.ie', 'simplygolf365.ie'),
+    'tok_ABC123'
+  );
+});
+
+test('googleSiteVerification emits NOTHING when the token is null or blank', () => {
+  assert.equal(googleSiteVerification(null, 'www.simplygolf365.ie', 'www.simplygolf365.ie'), undefined);
+  assert.equal(googleSiteVerification(undefined, 'www.simplygolf365.ie', 'www.simplygolf365.ie'), undefined);
+  assert.equal(googleSiteVerification('   ', 'www.simplygolf365.ie', 'www.simplygolf365.ie'), undefined);
+});
+
+test('googleSiteVerification emits NOTHING on the demo fallback / non-matching host even with a token', () => {
+  assert.equal(googleSiteVerification('tok_ABC123', 'localhost', 'www.simplygolf365.ie'), undefined);
+  assert.equal(
+    googleSiteVerification('tok_ABC123', 'ob-client-site-template.vercel.app', 'www.simplygolf365.ie'),
+    undefined
+  );
+  assert.equal(googleSiteVerification('tok_ABC123', 'other.ie', 'www.simplygolf365.ie'), undefined);
+});
+
+test('googleSiteVerification emits NOTHING for a tenant with no custom domain', () => {
+  assert.equal(googleSiteVerification('tok_ABC123', 'whatever.ie', null), undefined);
 });

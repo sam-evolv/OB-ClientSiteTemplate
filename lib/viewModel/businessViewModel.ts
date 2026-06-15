@@ -106,6 +106,8 @@ export type BusinessVM = {
   slug: string;
   /** The tenant's canonical custom domain (e.g. "simplygolf365.ie"), or null. */
   custom_domain: string | null;
+  /** Google Search Console verification token (raw meta content value), or null. */
+  gsc_verification: string | null;
   category: string;
   founded: number | null;
   primary_colour: string;
@@ -323,6 +325,7 @@ export function toBusinessViewModel(
     name: b.name,
     slug: b.slug,
     custom_domain: b.website_custom_domain ?? null,
+    gsc_verification: b.website_gsc_verification ?? null,
     category: b.category,
     founded: b.year_founded ?? null,
     primary_colour: accentHex,

@@ -26,6 +26,9 @@ export const simplyGolf: BusinessVM = {
   // url and the canonical/indexability decision (the local/preview host never
   // equals this, so dev stays noindex).
   custom_domain: 'simplygolf365.ie',
+  // No GSC token in the bundled fallback. The demo fallback never emits a
+  // verification tag anyway (host never matches the custom domain there).
+  gsc_verification: null,
   category: 'golf-simulator',
   founded: 2025,
 

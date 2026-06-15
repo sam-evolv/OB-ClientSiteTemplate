@@ -30,3 +30,24 @@ export function hostMatchesDomain(
   const normalised = normalizeHost(host);
   return normalised !== '' && normalised === normalizeHost(storedDomain);
 }
+
+/**
+ * The Google Search Console verification token to emit for a request, or
+ * undefined when none should render.
+ *
+ * Only the matched tenant's OWN custom-domain site carries its token: returns
+ * the trimmed token when it is non-empty AND the request host is the tenant's
+ * custom domain. Returns undefined otherwise — no token, blank token, no custom
+ * domain, or a non-matching host (the demo fallback on localhost/*.vercel.app,
+ * the slug route on a non-custom host, or an unmapped host). The returned string
+ * is exactly the `content` value of <meta name="google-site-verification">.
+ */
+export function googleSiteVerification(
+  token: string | null | undefined,
+  host: string | null | undefined,
+  storedDomain: string | null | undefined
+): string | undefined {
+  const trimmed = token?.trim();
+  if (!trimmed) return undefined;
+  return hostMatchesDomain(host, storedDomain) ? trimmed : undefined;
+}
