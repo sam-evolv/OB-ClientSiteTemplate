@@ -4,10 +4,10 @@ import { toBusinessViewModel, type BusinessVM } from '@/lib/viewModel/businessVi
 import { mapNamedColourToHex } from '@/lib/utils/colour';
 import { simplyGolf } from '@/lib/data/simplyGolf';
 import { createAnonClient } from '@/lib/supabase';
-import { normalizeHost, hostMatchesDomain } from './host';
+import { normalizeHost, hostMatchesDomain, googleSiteVerification } from './host';
 
 // Re-exported so existing importers (and tests) can reach the normaliser.
-export { normalizeHost, hostMatchesDomain };
+export { normalizeHost, hostMatchesDomain, googleSiteVerification };
 
 /**
  * Business resolution for the marketing site. Shared by the slug route and the
@@ -219,6 +219,11 @@ export function buildMetadata(
   const description = b.hero_subhead || b.tagline || undefined;
   const ogImage = absoluteMediaUrl(b.hero_image?.url, origin);
 
+  // Per-tenant Google Search Console verification: only the matched tenant's own
+  // custom-domain site emits its token (never the demo fallback or unmapped
+  // hosts). Emits nothing when the column is null/empty.
+  const googleVerification = googleSiteVerification(b.gsc_verification, opts.host, b.custom_domain);
+
   return {
     title,
     description,
@@ -228,6 +233,7 @@ export function buildMetadata(
       follow: true,
       googleBot: { index: indexable, follow: true }
     },
+    ...(googleVerification ? { verification: { google: googleVerification } } : {}),
     openGraph: {
       title,
       description,
