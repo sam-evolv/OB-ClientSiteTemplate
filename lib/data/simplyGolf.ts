@@ -22,6 +22,13 @@ export const simplyGolf: BusinessVM = {
   // ── Identity ──────────────────────────────────────────────────────────────
   name: 'SIMply Golf 365',
   slug: 'simplygolf365',
+  // Canonical custom domain, matching the live businesses row. Used for JSON-LD
+  // url and the canonical/indexability decision (the local/preview host never
+  // equals this, so dev stays noindex).
+  custom_domain: 'simplygolf365.ie',
+  // No GSC token in the bundled fallback. The demo fallback never emits a
+  // verification tag anyway (host never matches the custom domain there).
+  gsc_verification: null,
   category: 'golf-simulator',
   founded: 2025,
 
@@ -64,6 +71,11 @@ export const simplyGolf: BusinessVM = {
     secondary_description: 'Limerick, Tipperary, Kerry, Waterford — small travel supplement.',
     further: 'Anywhere in Ireland — quote on enquiry.'
   },
+
+  // Mobile business: no fixed address or opening hours. The LocationHours
+  // section is gated on `location`, so it stays hidden for SIMply Golf.
+  location: null,
+  hours: [],
 
   venue_requirements: [
     { stat: '8 × 8 m', label: 'Floor space' },

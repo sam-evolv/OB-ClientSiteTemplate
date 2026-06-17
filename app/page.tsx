@@ -2,26 +2,27 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { MarketingPage } from '@/components/MarketingPage';
-import {
-  resolveByHost,
-  resolveBySlug,
-  DEMO_SLUG,
-  buildJsonLd,
-  buildMetadata
-} from '@/lib/business/resolve';
+import { resolveForHost, buildJsonLd, buildMetadata } from '@/lib/business/resolve';
 
 export const revalidate = 60;
 
 /**
- * Root route. Resolves the business from the request host via the
- * website_custom_domain column (README §9) — so simplygolf365.ie serves the
- * SIMply Golf business at its own apex. The bare template/preview domain has no
- * domain mapping, so it falls back to the demo business, which is what makes the
- * Vercel preview show the site at its root URL.
+ * Root route. Resolves the business from the request host in precedence order
+ * (resolveForHost): an exact custom-domain match (website_custom_domain, README
+ * §9) FIRST — so simplygolf365.ie serves SIMply Golf at its own apex — THEN the
+ * platform subdomain "<slug>.<PARENT>" (NEXT_PUBLIC_PLATFORM_DOMAIN), so
+ * simplygolf365.openbook.ie serves the same tenant by slug.
+ *
+ * When no tenant maps to the host, the bare template/preview domain (localhost,
+ * *.vercel.app) still falls back to the demo business so the Vercel preview
+ * shows a site at its root URL. A real but unmapped customer domain — and the
+ * bare parent / www.<PARENT> marketing root — return null instead, so RootPage
+ * renders the clean 404 placeholder rather than leaking the demo tenant's
+ * content onto an unconfigured domain.
  */
 async function resolveRoot() {
   const host = (await headers()).get('host');
-  return (await resolveByHost(host)) ?? (await resolveBySlug(DEMO_SLUG));
+  return resolveForHost(host);
 }
 
 export default async function RootPage() {
@@ -40,7 +41,10 @@ export default async function RootPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get('host');
   const b = await resolveRoot();
   if (!b) return {};
-  return buildMetadata(b);
+  // The root route is the canonical host-based route: indexable only when this
+  // host is the tenant's own custom domain.
+  return buildMetadata(b, { host, canonicalRoute: true });
 }

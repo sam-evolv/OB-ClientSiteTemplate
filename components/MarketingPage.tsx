@@ -13,6 +13,7 @@ import { Events } from '@/components/sections/Events';
 import { About } from '@/components/sections/About';
 import { Gallery } from '@/components/sections/Gallery';
 import { WhereWeGo } from '@/components/sections/WhereWeGo';
+import { LocationHours } from '@/components/sections/LocationHours';
 import { Press } from '@/components/sections/Press';
 import { Contact } from '@/components/sections/Contact';
 import type { CSSProperties } from 'react';
@@ -45,6 +46,7 @@ export function MarketingPage({ b }: { b: BusinessVM }) {
     about: Boolean(b.about.body || b.about.headline || b.founder.name),
     gallery: b.gallery.length > 0,
     travel: Boolean(b.travel),
+    location: Boolean(b.location?.address),
     press: b.press_mentions.length > 0 || b.testimonials.length > 0,
     contact: Boolean(b.phone || b.email)
   };
@@ -88,6 +90,7 @@ export function MarketingPage({ b }: { b: BusinessVM }) {
       {show.about && <About b={b} accent={accent} />}
       {show.gallery && <Gallery b={b} accent={accent} />}
       {show.travel && <WhereWeGo b={b} accent={accent} />}
+      {show.location && <LocationHours b={b} accent={accent} />}
       {show.press && <Press b={b} accent={accent} />}
       {show.contact && <Contact b={b} accent={accent} />}
 

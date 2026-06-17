@@ -81,7 +81,11 @@ export const BusinessRowSchema = z.object({
   founder_role: z.string().nullable().optional(),
   founder_bio: z.string().nullable().optional(),
   instagram_url: z.string().nullable().optional(),
-  website_stats: z.unknown().nullable().optional()
+  website_stats: z.unknown().nullable().optional(),
+
+  // Per-tenant Google Search Console verification token (raw meta content
+  // value). Nullable/optional like the other website_ marketing columns.
+  website_gsc_verification: z.string().nullable().optional()
 });
 
 export type BusinessRow = z.infer<typeof BusinessRowSchema>;
