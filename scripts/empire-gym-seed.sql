@@ -2,9 +2,8 @@
 --
 -- Mirrors scripts/seed-simply-golf.ts in intent: this is the row-level seed that
 -- backs the live empire-gym tenant on the shared production project
--- (nrntaowmmemhjfxjqjch). It was applied via Supabase MCP execute_sql at
--- onboarding time; this file is kept here as a runnable revert/replay artifact
--- and a source-of-truth record of the row's contents.
+-- (nrntaowmmemhjfxjqjch). It is the source-of-truth record of the row's contents
+-- and a runnable replay/revert artifact, kept faithful to live production.
 --
 -- Reuse decisions:
 --   * primary_colour: 'crimson' (existing named-colour token, closest to the
@@ -17,15 +16,25 @@
 --   * location: rendered via the existing LocationHours section (fixed address).
 --   * No template code changes required.
 --
--- Idempotent reset: use the DELETE block at the top before re-running.
+-- Assets: every URL on this row points at the `business-assets` storage bucket
+-- under the business id prefix
+--   2ec3b899-e539-4a07-93f3-16682ad2ef86/
+--     logo.png
+--     interior.png
+--     coaches.png
+--     hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png   (hero still)
+--     hf_20260616_161710_a24bf8a8-eaee-4b49-bb5f-124790b812f9.mp4   (hero video)
+--
+-- Idempotent by design: the businesses row UPSERTs on id, and the three child
+-- tables are wiped for this business_id then re-inserted, so re-running this
+-- file converges the live row back to exactly this state.
 
--- ── Optional reset (uncomment to wipe before re-seeding) ────────────────────
--- DELETE FROM public.business_hours  WHERE business_id = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
--- DELETE FROM public.business_media  WHERE business_id = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
--- DELETE FROM public.services        WHERE business_id = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
--- DELETE FROM public.businesses      WHERE id          = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
+-- ── child rows: clean replace ──────────────────────────────────────────────
+DELETE FROM public.business_hours WHERE business_id = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
+DELETE FROM public.business_media WHERE business_id = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
+DELETE FROM public.services       WHERE business_id = '2ec3b899-e539-4a07-93f3-16682ad2ef86';
 
--- ── businesses row ─────────────────────────────────────────────────────────
+-- ── businesses row (upsert on id) ──────────────────────────────────────────
 INSERT INTO public.businesses (
   id, owner_id, name, slug, category, city,
   description, tagline, year_founded,
@@ -53,13 +62,13 @@ INSERT INTO public.businesses (
   2025,
   'crimson',
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
+  'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
+  'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png',
   ARRAY[
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/interior.png',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
-    'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png'
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png'
   ]::text[],
   'Unit 3, Matthew Hill',
   'T12 CR22',
@@ -74,7 +83,7 @@ INSERT INTO public.businesses (
   'inner empire.',
   'A new kind of gym in Cork — serious iron, zero ego. Strength, discipline and respect, built rep by rep, for every body and every level. Walk in however you are. Walk out stronger.',
   'photo',
-  'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
+  'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
   'A gym for all. Built to last.',
   'Empire Gym opened its doors in Cork with one belief: real strength is for everyone. Kitted out with proper plate-loaded machines, racks, free weights and the space to actually train, it''s a gym built for results — but it''s the atmosphere that sets it apart. Whether you''re chasing a stage, a PB, or just a healthier, stronger you, you''ll find a welcome and a community that has your back. Strength, discipline and respect aren''t just words on the wall here — they''re how the place runs.',
   'Empire Gym opened its doors in Cork with one belief: real strength is for everyone. Kitted out with proper plate-loaded machines, racks, free weights and the space to actually train, it''s a gym built for results — but it''s the atmosphere that sets it apart. Whether you''re chasing a stage, a PB, or just a healthier, stronger you, you''ll find a welcome and a community that has your back. Strength, discipline and respect aren''t just words on the wall here — they''re how the place runs.',
@@ -95,7 +104,57 @@ INSERT INTO public.businesses (
   true,
   'enquiry',
   'card'
-);
+)
+ON CONFLICT (id) DO UPDATE SET
+  owner_id                 = EXCLUDED.owner_id,
+  name                     = EXCLUDED.name,
+  slug                     = EXCLUDED.slug,
+  category                 = EXCLUDED.category,
+  city                     = EXCLUDED.city,
+  description              = EXCLUDED.description,
+  tagline                  = EXCLUDED.tagline,
+  year_founded             = EXCLUDED.year_founded,
+  primary_colour           = EXCLUDED.primary_colour,
+  logo_url                 = EXCLUDED.logo_url,
+  hero_image_url           = EXCLUDED.hero_image_url,
+  cover_image_url          = EXCLUDED.cover_image_url,
+  processed_icon_url       = EXCLUDED.processed_icon_url,
+  gallery_urls             = EXCLUDED.gallery_urls,
+  address                  = EXCLUDED.address,
+  address_line             = EXCLUDED.address_line,
+  email                    = EXCLUDED.email,
+  phone                    = EXCLUDED.phone,
+  instagram_handle         = EXCLUDED.instagram_handle,
+  instagram_url            = EXCLUDED.instagram_url,
+  website                  = EXCLUDED.website,
+  website_custom_domain    = EXCLUDED.website_custom_domain,
+  website_url              = EXCLUDED.website_url,
+  website_hero_headline_1  = EXCLUDED.website_hero_headline_1,
+  website_hero_headline_2  = EXCLUDED.website_hero_headline_2,
+  website_hero_subhead     = EXCLUDED.website_hero_subhead,
+  website_hero_variant     = EXCLUDED.website_hero_variant,
+  website_hero_image_url   = EXCLUDED.website_hero_image_url,
+  website_about_headline   = EXCLUDED.website_about_headline,
+  website_about_body       = EXCLUDED.website_about_body,
+  about_long               = EXCLUDED.about_long,
+  founder_name             = EXCLUDED.founder_name,
+  founder_role             = EXCLUDED.founder_role,
+  founder_bio              = EXCLUDED.founder_bio,
+  founder_photo_url        = EXCLUDED.founder_photo_url,
+  mission_statement        = EXCLUDED.mission_statement,
+  mission_highlight_word   = EXCLUDED.mission_highlight_word,
+  travel_zones             = EXCLUDED.travel_zones,
+  venue_requirements       = EXCLUDED.venue_requirements,
+  website_stats            = EXCLUDED.website_stats,
+  trust_signals            = EXCLUDED.trust_signals,
+  press_mentions           = EXCLUDED.press_mentions,
+  testimonials             = EXCLUDED.testimonials,
+  plan                     = EXCLUDED.plan,
+  is_live                  = EXCLUDED.is_live,
+  website_is_published     = EXCLUDED.website_is_published,
+  booking_mode             = EXCLUDED.booking_mode,
+  payment_acceptance       = EXCLUDED.payment_acceptance,
+  updated_at               = now();
 
 -- ── services (3 tabbed groups; price_cents=0 = "On enquiry" per template) ──
 INSERT INTO public.services
@@ -127,17 +186,15 @@ VALUES
     30, 'Monthly', 0, true, 11, 'Train with Dayana', 'One-to-one and online coaching with Dayana. Get in touch to find the right plan for you.', false);
 
 -- ── business_media (logo / hero / about / gallery x 3) ─────────────────────
--- The hero image + video are public CloudFront assets baked into the design pack
--- (HERO_IMG / HERO_VID in data.jsx). The remaining three (logo, coaches, interior)
--- are Supabase Storage URLs in the `business-assets` bucket at the path
--- {business_id}/{filename} — see scripts/empire-gym-assets.md for the upload list.
+-- Every asset lives in the business-assets bucket under the business id prefix
+-- — see scripts/empire-gym-assets.md for the canonical file list.
 INSERT INTO public.business_media (business_id, kind, media_type, url, video_url, alt, caption, label, sort_order) VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'logo',  'image',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png',
     NULL, 'Empire Gym', NULL, NULL, 0),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'hero',  'image',
-    'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
-    'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161710_a24bf8a8-eaee-4b49-bb5f-124790b812f9.mp4',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161710_a24bf8a8-eaee-4b49-bb5f-124790b812f9.mp4',
     'The glowing red EMPIRE emblem on the gym wall, weights racked in the dark', NULL, NULL, 0),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'about', 'image',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
@@ -150,7 +207,7 @@ INSERT INTO public.business_media (business_id, kind, media_type, url, video_url
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
     NULL, 'Empire coaching — competitor and coach', 'coaching to the stage', NULL, 1),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image',
-    'https://d8j0ntlcm91z4.cloudfront.net/user_3Ei7AlrjOP38XotvP8uZ27B9ge5/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
     NULL, 'The glowing EMPIRE emblem on the gym wall', 'welcome to the Empire', NULL, 2);
 
 -- ── business_hours (Mon–Fri 06:00–22:00, Sat–Sun 08:00–20:00) ──────────────
