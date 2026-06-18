@@ -153,7 +153,16 @@ export const ServiceRowSchema = z.object({
   // duration_minutes, a "Most popular" decoy flag, and a per-group blurb.
   duration_label: z.string().nullable().optional(),
   is_popular: z.boolean().nullable().optional(),
-  group_blurb: z.string().nullable().optional()
+  group_blurb: z.string().nullable().optional(),
+
+  // Optional per-service CTA for tenants whose service cards are real buy /
+  // book / enquiry links (e.g. Stripe checkout, WhatsApp, an onboarding page).
+  // When cta_url is null the card keeps the default static "Enquire →"
+  // affordance, so this is backward-compatible for every existing tenant.
+  // price_suffix is a small qualifier shown next to the price (e.g. "/ mo").
+  cta_label: z.string().nullable().optional(),
+  cta_url: z.string().nullable().optional(),
+  price_suffix: z.string().nullable().optional()
 });
 export type ServiceRow = z.infer<typeof ServiceRowSchema>;
 

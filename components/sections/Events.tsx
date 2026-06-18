@@ -103,18 +103,50 @@ function ServiceCard({ service, accent }: { service: ServiceVM; accent: string }
           }}
         >
           {formatPrice(service.price)}
+          {service.price_suffix ? (
+            <span style={{ fontSize: 13, opacity: 0.6, fontWeight: 400 }}> {service.price_suffix}</span>
+          ) : null}
         </div>
-        <div
-          className="service-cta"
-          style={{
-            fontSize: 13,
-            color: popular ? accent : 'rgba(255,255,255,0.75)',
-            fontWeight: 500,
-            transition: 'transform 400ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease'
-          }}
-        >
-          Enquire →
-        </div>
+        {service.cta ? (
+          <a
+            href={service.cta.href}
+            target={service.cta.href.startsWith('http') ? '_blank' : undefined}
+            rel="noopener"
+            className="service-buy"
+            style={{
+              fontFamily: FONT_SANS,
+              fontSize: 13,
+              fontWeight: 600,
+              padding: '10px 16px',
+              borderRadius: 9,
+              minHeight: 40,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 7,
+              background: popular ? accent : 'rgba(255,255,255,0.06)',
+              color: popular ? '#080808' : '#fafafa',
+              border: popular ? 'none' : `1px solid ${accent}55`,
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              transition: 'transform 200ms ease, box-shadow 200ms ease',
+              boxShadow: popular ? `0 0 22px ${accent}55` : 'none'
+            }}
+          >
+            {service.cta.label} →
+          </a>
+        ) : (
+          <div
+            className="service-cta"
+            style={{
+              fontSize: 13,
+              color: popular ? accent : 'rgba(255,255,255,0.75)',
+              fontWeight: 500,
+              transition: 'transform 400ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease'
+            }}
+          >
+            Enquire →
+          </div>
+        )}
       </div>
     </div>
   );

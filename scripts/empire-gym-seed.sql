@@ -5,6 +5,9 @@
 -- (nrntaowmmemhjfxjqjch). It is the source-of-truth record of the row's contents
 -- and a runnable replay/revert artifact, kept faithful to live production.
 --
+-- Requires migration 20260618120000_services_cta_columns.sql (adds the nullable
+-- services.cta_label / cta_url / price_suffix columns referenced below).
+--
 -- Reuse decisions:
 --   * primary_colour: 'crimson' (existing named-colour token, closest to the
 --     Empire brand red #E0241B; matches the precedent set by Dublin Iron Gym).
@@ -157,33 +160,47 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at               = now();
 
 -- ── services (3 tabbed groups; price_cents=0 = "On enquiry" per template) ──
+-- cta_label / cta_url make each card a real button (Stripe checkout, WhatsApp,
+-- the onboarding page, or Instagram). cta_url NULL would keep the static
+-- "Enquire →" — here every card has one. price_suffix renders next to the price.
 INSERT INTO public.services
-  (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular)
+  (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix)
 VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Monthly',  'Full gym access, cancel any time. The simplest way in.',
-    30, 'Rolling · no contract', 0, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true),
+    30, 'Rolling · no contract', 0, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
+    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', '/ mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '3 months', 'Three months of full access, paid up front.',
-    90, 'Up-front', 0, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false),
+    90, 'Up-front', 0, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire — better value for the committed.',
-    180, 'Up-front', 0, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false),
+    180, 'Up-front', 0, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '12 months', 'A full year on the floor — our best rate.',
-    365, 'Best value', 0, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true),
+    365, 'Best value', 0, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
+    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Student',  'Discounted full access for students — bring your ID.',
-    30, 'Rolling', 0, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false),
+    30, 'Rolling', 0, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', '/ mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Day pass', 'Just passing through? A full day on the floor.',
-    1, '1 day', 0, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community.', false),
+    1, '1 day', 0, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Get a day pass', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Online Coaching', 'Fully tailored training, nutrition and check-ins. After checkout you''ll complete a short onboarding form and get your coaching packs.',
-    30, 'Monthly · SS Coaching', 0, true,  7, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', true),
+    30, 'Monthly · SS Coaching', 0, true,  7, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', true,
+    'Start coaching', 'https://buy.stripe.com/14A7sL82N7Tr9Mb75r8IU0u', '/ mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'In-person PT', 'One-to-one sessions with Stephen on the Empire floor. Enquire for block rates.',
-    60, 'Per session / block', 0, true,  8, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false),
+    60, 'Per session / block', 0, true,  8, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false,
+    'Enquire on WhatsApp', 'https://wa.me/353879943270', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Already signed up?', 'Just purchased coaching? Complete your client onboarding form here and grab your info + start-up packs.',
-    15, 'New clients', 0, true,  9, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false),
+    15, 'New clients', 0, true,  9, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false,
+    'Complete onboarding', '/empire-gym/onboarding.html', NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Personal training', 'Tailored one-to-one coaching with Dayana, built around your goals and pace.',
-    60, 'Per session / block', 0, true, 10, 'Train with Dayana', 'One-to-one and online coaching with Dayana. Get in touch to find the right plan for you.', true),
+    60, 'Per session / block', 0, true, 10, 'Train with Dayana', 'One-to-one and online coaching with Dayana. Get in touch to find the right plan for you.', true,
+    'Enquire', 'https://www.instagram.com/empiregym.cork/', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Online coaching', 'Remote training and nutrition coaching with check-ins. Message to get started.',
-    30, 'Monthly', 0, true, 11, 'Train with Dayana', 'One-to-one and online coaching with Dayana. Get in touch to find the right plan for you.', false);
+    30, 'Monthly', 0, true, 11, 'Train with Dayana', 'One-to-one and online coaching with Dayana. Get in touch to find the right plan for you.', false,
+    'Enquire', 'https://www.instagram.com/empiregym.cork/', NULL);
 
 -- ── business_media (logo / hero / about / gallery x 3) ─────────────────────
 -- Every asset lives in the business-assets bucket under the business id prefix

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0b" />
+<link rel="icon" type="image/png" href="https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png" />
+<title>SS Coaching — Client Onboarding · Empire Gym</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
+<style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     DEV CONFIG — wire these when the site is built out properly.
+     - COACH_WHATSAPP: Stephen's WhatsApp (intl, digits only). Live now.
+     - SUBMIT_ENDPOINT: leave '' for now. Set to your API URL to ALSO email
+       Stephen / save the submission to a DB. When set, the form POSTs the
+       answers as JSON there before handing off to WhatsApp + the welcome page.
+     ───────────────────────────────────────────────────────────────────────── */
+  :root{
+    --bg:#0a0a0b; --panel:#141416; --panel-2:#1b1b1e; --line:rgba(255,255,255,0.12);
+    --ink:#faf6f1; --muted:rgba(250,246,241,0.6); --accent:#E0241B; --accent-ink:#0a0a0b;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:
+      radial-gradient(120% 70% at 50% 0%, rgba(224,36,27,0.12) 0%, transparent 55%),
+      linear-gradient(180deg,#0c0c0d 0%, #0a0a0b 100%);
+    background-attachment:fixed; color:var(--ink);
+    font-family:'Geist',system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:clamp(28px,6vw,72px) clamp(18px,5vw,40px) 120px;}
+  .top{display:flex; align-items:center; gap:14px; margin-bottom:clamp(28px,5vw,44px);}
+  .top img{width:48px; height:48px; object-fit:contain;}
+  .top .brand{font-family:'Geist Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted);}
+  .eyebrow{font-family:'Geist Mono',monospace; font-size:12px; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent); margin:0 0 16px; display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent);}
+  h1{font-family:'Fraunces',Georgia,serif; font-weight:300; font-size:clamp(34px,6.5vw,60px); line-height:1.0; letter-spacing:-0.03em; margin:0 0 18px;}
+  h1 em{font-style:italic; color:var(--accent);}
+  .lead{font-size:clamp(15px,1.7vw,17px); color:var(--muted); max-width:60ch; margin:0 0 8px;}
+
+  /* photos callout */
+  .photos{
+    margin:clamp(28px,4vw,40px) 0; padding:clamp(20px,3vw,26px); border-radius:16px;
+    background:linear-gradient(135deg, rgba(224,36,27,0.12) 0%, rgba(224,36,27,0.03) 100%);
+    border:1px solid rgba(224,36,27,0.3);
+  }
+  .photos h2{font-family:'Geist',sans-serif; font-size:15px; font-weight:600; margin:0 0 10px; display:flex; align-items:center; gap:9px;}
+  .photos ul{margin:0; padding-left:20px; color:var(--muted); font-size:14px;}
+  .photos li{margin:4px 0;}
+  .photos b{color:var(--ink); font-weight:600;}
+
+  form{margin-top:8px;}
+  fieldset{border:none; margin:0; padding:0; margin-top:clamp(34px,5vw,52px);}
+  legend{
+    font-family:'Geist Mono',monospace; font-size:12px; font-weight:500; letter-spacing:0.16em;
+    text-transform:uppercase; color:var(--accent); padding:0; margin-bottom:6px; width:100%;
+    border-bottom:1px solid var(--line); padding-bottom:14px;
+  }
+  .grp{margin-top:22px;}
+  label.q{display:block; font-size:15px; font-weight:500; color:var(--ink); margin-bottom:9px;}
+  label.q .opt{color:var(--muted); font-weight:400;}
+  .hint{display:block; font-size:13px; color:var(--muted); margin:-4px 0 9px;}
+  input[type=text], input[type=number], input[type=date], input[type=email], input[type=tel], textarea, select{
+    width:100%; background:var(--panel); border:1px solid var(--line); border-radius:11px;
+    color:var(--ink); font-family:'Geist',sans-serif; font-size:15px; padding:13px 15px; outline:none;
+    transition:border-color 180ms ease, box-shadow 180ms ease;
+  }
+  textarea{min-height:96px; resize:vertical; line-height:1.55;}
+  input:focus, textarea:focus, select:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(224,36,27,0.18);}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:560px){ .row{grid-template-columns:1fr;} }
+  .radios{display:flex; flex-wrap:wrap; gap:10px;}
+  .radios label{
+    display:inline-flex; align-items:center; gap:9px; padding:11px 16px; border-radius:999px;
+    background:var(--panel); border:1px solid var(--line); cursor:pointer; font-size:14px; color:var(--ink);
+    transition:all 160ms ease; user-select:none; min-height:44px;
+  }
+  .radios input{accent-color:var(--accent); width:16px; height:16px;}
+  .radios label:has(input:checked){border-color:var(--accent); background:rgba(224,36,27,0.12);}
+  .female-only{overflow:hidden; transition:opacity 300ms ease;}
+  .req{color:var(--accent);}
+
+  .submit-bar{margin-top:clamp(40px,6vw,60px);}
+  button.submit{
+    width:100%; background:var(--accent); color:#fff; border:none; border-radius:13px;
+    font-family:'Geist',sans-serif; font-size:16px; font-weight:600; padding:18px 24px; cursor:pointer;
+    min-height:58px; display:inline-flex; align-items:center; justify-content:center; gap:11px;
+    box-shadow:0 0 30px rgba(224,36,27,0.4); transition:transform 200ms ease, box-shadow 200ms ease;
+  }
+  button.submit:hover{transform:translateY(-1px); box-shadow:0 0 44px rgba(224,36,27,0.55);}
+  .submit-note{text-align:center; color:var(--muted); font-size:13px; margin-top:16px; line-height:1.55;}
+  .err{color:#ff6b6b; font-size:13px; margin-top:10px; text-align:center; display:none;}
+  a.back{display:inline-flex; align-items:center; gap:8px; color:var(--muted); text-decoration:none; font-size:13px; font-family:'Geist Mono',monospace; letter-spacing:0.05em;}
+  a.back:hover{color:var(--ink);}
+  .fallback{margin-top:22px; padding-top:20px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; gap:12px; justify-content:center;}
+  .fallback-label{font-family:'Geist Mono',monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted);}
+  .fb-btn{background:#141416; border:1px solid var(--line); color:var(--ink); font-family:'Geist',sans-serif; font-size:13.5px; font-weight:500; padding:11px 16px; border-radius:10px; cursor:pointer; min-height:44px; transition:border-color 160ms ease;}
+  .fb-btn:hover{border-color:var(--accent);}
+  .copied{display:none; font-size:13px; color:#4ade80; font-family:'Geist Mono',monospace;}
+  .copied.show{display:inline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← Empire Gym</a>
+  <div class="top" style="margin-top:18px;">
+    <img src="https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png" alt="" />
+    <span class="brand">SS Coaching · Stephen Sharpe</span>
+  </div>
+
+  <p class="eyebrow">Client onboarding</p>
+  <h1>Welcome to <em>SS Coaching.</em></h1>
+  <p class="lead">You're in. Fill this out in as much detail as you can — it's how Stephen builds your plan around <em>you</em>. It takes about 10 minutes. When you submit, it opens WhatsApp with your answers ready to send.</p>
+
+  <div class="photos">
+    <h2>📸 Before you start — physique photos</h2>
+    <ul>
+      <li>Attach current <b>front, back &amp; side</b> photos when you send your answers on WhatsApp.</li>
+      <li>Use the <b>back camera</b>, showing your <b>full body</b> clearly.</li>
+      <li>Take them in the <b>same location</b> you'll use for all future check-ins.</li>
+    </ul>
+  </div>
+
+  <form id="onboard" novalidate>
+    <!-- CONSENT -->
+    <fieldset>
+      <legend>Consent</legend>
+      <div class="grp">
+        <label class="q">Are you okay with your transformation being posted on social media?</label>
+        <div class="radios" role="radiogroup">
+          <label><input type="radio" name="consent" value="Yes" required /> Yes</label>
+          <label><input type="radio" name="consent" value="No" /> No</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- PERSONAL DETAILS -->
+    <fieldset>
+      <legend>Personal details</legend>
+      <div class="row">
+        <div class="grp"><label class="q">Full name <span class="req">*</span></label><input type="text" name="full_name" required /></div>
+        <div class="grp"><label class="q">Age <span class="req">*</span></label><input type="number" name="age" min="14" max="100" required /></div>
+      </div>
+      <div class="row">
+        <div class="grp"><label class="q">Height</label><input type="text" name="height" placeholder="e.g. 5'10 / 178cm" /></div>
+        <div class="grp"><label class="q">Weight</label><input type="text" name="weight" placeholder="e.g. 82kg" /></div>
+      </div>
+      <div class="grp"><label class="q">Body composition <span class="opt">(if known)</span></label><input type="text" name="body_comp" placeholder="e.g. ~18% body fat" /></div>
+      <div class="grp"><label class="q">Weak body parts <span class="opt">(physique focus points)</span></label><input type="text" name="weak_parts" /></div>
+      <div class="grp">
+        <label class="q">Metabolism speed</label>
+        <div class="radios" role="radiogroup">
+          <label><input type="radio" name="metabolism" value="Fast (lean all year)" /> Fast — lean all year</label>
+          <label><input type="radio" name="metabolism" value="Medium (in-between)" /> Medium</label>
+          <label><input type="radio" name="metabolism" value="Slow (hold body fat)" /> Slow — hold body fat</label>
+        </div>
+      </div>
+      <div class="grp"><label class="q">Illnesses <span class="opt">(if any)</span></label><input type="text" name="illnesses" /></div>
+      <div class="grp"><label class="q">Injuries / disabilities / exercises you cannot perform</label><textarea name="injuries"></textarea></div>
+    </fieldset>
+
+    <!-- FEMALE CLIENTS ONLY -->
+    <fieldset>
+      <legend>Female clients only</legend>
+      <div class="grp">
+        <label class="q">Does this section apply to you?</label>
+        <div class="radios" role="radiogroup">
+          <label><input type="radio" name="female_applies" value="yes" id="female-yes" /> Yes</label>
+          <label><input type="radio" name="female_applies" value="no" id="female-no" /> Skip this section</label>
+        </div>
+      </div>
+      <div class="female-only" id="femaleBlock" hidden>
+        <div class="grp">
+          <label class="q">Are you currently getting your period?</label>
+          <div class="radios" role="radiogroup">
+            <label><input type="radio" name="period" value="Yes" /> Yes</label>
+            <label><input type="radio" name="period" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="grp"><label class="q">If yes — first day of last bleed</label><input type="date" name="last_bleed" /></div>
+        <div class="grp">
+          <label class="q">If no — are you in:</label>
+          <div class="radios" role="radiogroup">
+            <label><input type="radio" name="cycle_status" value="Pre-menopause" /> Pre-menopause</label>
+            <label><input type="radio" name="cycle_status" value="Menopause" /> Menopause</label>
+            <label><input type="radio" name="cycle_status" value="Medication/contraception affecting cycle" /> Medication / contraception</label>
+          </div>
+        </div>
+        <div class="grp"><label class="q">Details</label><input type="text" name="cycle_details" /></div>
+      </div>
+    </fieldset>
+
+    <!-- ENHANCEMENT -->
+    <fieldset>
+      <legend>Enhancement <span style="color:var(--muted); text-transform:none; letter-spacing:0; font-family:'Geist',sans-serif; font-weight:400; font-size:12px;">(if applicable)</span></legend>
+      <div class="grp"><label class="q">Current cycle <span class="opt">(if using)</span></label><input type="text" name="current_cycle" /></div>
+      <div class="grp"><label class="q">Last time off cycle <span class="opt">(if applies)</span></label><input type="text" name="last_off_cycle" /></div>
+    </fieldset>
+
+    <!-- DAILY SCHEDULE -->
+    <fieldset>
+      <legend>Daily schedule</legend>
+      <div class="grp">
+        <label class="q">Walk us through a typical day</label>
+        <span class="hint">Include sleep, wake-up, meals, training, cardio, work, etc.</span>
+        <textarea name="schedule" rows="4"></textarea>
+      </div>
+    </fieldset>
+
+    <!-- NUTRITION -->
+    <fieldset>
+      <legend>Nutrition</legend>
+      <div class="grp"><label class="q">Current diet <span class="opt">(meals, macros, or structure)</span></label><textarea name="diet"></textarea></div>
+      <div class="grp"><label class="q">Food allergies or dislikes</label><input type="text" name="allergies" /></div>
+    </fieldset>
+
+    <!-- TRAINING & CARDIO -->
+    <fieldset>
+      <legend>Training &amp; cardio</legend>
+      <div class="grp"><label class="q">Current cardio <span class="opt">(type, duration, frequency)</span></label><input type="text" name="cardio" /></div>
+      <div class="grp"><label class="q">How many days per week can you train? <span class="req">*</span></label><input type="text" name="training_days" required placeholder="e.g. 5" /></div>
+    </fieldset>
+
+    <!-- PHYSIQUE GOALS -->
+    <fieldset>
+      <legend>Physique goals</legend>
+      <div class="grp"><label class="q">Short-term <span class="opt">(next 3–6 months)</span></label><textarea name="phys_short"></textarea></div>
+      <div class="grp"><label class="q">Long-term <span class="opt">(12+ months)</span></label><textarea name="phys_long"></textarea></div>
+    </fieldset>
+
+    <!-- LIFESTYLE GOALS -->
+    <fieldset>
+      <legend>Lifestyle goals</legend>
+      <div class="row">
+        <div class="grp"><label class="q">Short-term life goals</label><textarea name="life_short"></textarea></div>
+        <div class="grp"><label class="q">Long-term life goals</label><textarea name="life_long"></textarea></div>
+      </div>
+    </fieldset>
+
+    <!-- BUSINESS GOALS -->
+    <fieldset>
+      <legend>Business goals</legend>
+      <div class="row">
+        <div class="grp"><label class="q">Short-term business goals</label><textarea name="biz_short"></textarea></div>
+        <div class="grp"><label class="q">Long-term business goals</label><textarea name="biz_long"></textarea></div>
+      </div>
+    </fieldset>
+
+    <div class="submit-bar">
+      <button type="submit" class="submit">
+        Send my answers on WhatsApp
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.13h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.36c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.69 8.23-8.23 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>
+      </button>
+      <p class="err" id="err">Please fill in the required fields (marked *).</p>
+      <p class="submit-note">Your answers open in WhatsApp to Stephen, ready to send with your photos attached. You'll then land on your welcome page with your coaching packs.</p>
+
+      <div class="fallback">
+        <span class="fallback-label">No WhatsApp?</span>
+        <button type="button" class="fb-btn" id="emailBtn">✉️ Email my answers instead</button>
+        <button type="button" class="fb-btn" id="copyBtn">⧉ Copy my answers</button>
+        <span class="copied" id="copied">Copied — paste it to Stephen</span>
+      </div>
+      <p class="submit-note" style="margin-top:14px;">Either way, remember to send your <b>front, back &amp; side</b> photos to Stephen too.</p>
+    </div>
+  </form>
+</div>
+
+<script>
+  // ── DEV CONFIG ────────────────────────────────────────────────────────────
+  const COACH_WHATSAPP = '353879943270';   // Stephen — live
+  const COACH_EMAIL = '';                   // set Stephen's email for the mailto fallback
+  const SUBMIT_ENDPOINT = '';               // set to your API URL to email/save too
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // Female-only reveal
+  const femaleBlock = document.getElementById('femaleBlock');
+  document.getElementById('female-yes').addEventListener('change', () => { femaleBlock.hidden = false; });
+  document.getElementById('female-no').addEventListener('change', () => { femaleBlock.hidden = true; });
+
+  const form = document.getElementById('onboard');
+  const errEl = document.getElementById('err');
+
+  // Human-readable labels for the WhatsApp message, in order.
+  const FIELDS = [
+    ['— CONSENT —', null],
+    ['Social media OK?', 'consent'],
+    ['— PERSONAL DETAILS —', null],
+    ['Full name', 'full_name'], ['Age', 'age'], ['Height', 'height'], ['Weight', 'weight'],
+    ['Body composition', 'body_comp'], ['Weak body parts', 'weak_parts'], ['Metabolism', 'metabolism'],
+    ['Illnesses', 'illnesses'], ['Injuries / cannot perform', 'injuries'],
+    ['— FEMALE CLIENTS —', null],
+    ['Section applies', 'female_applies'], ['Getting period?', 'period'], ['First day of last bleed', 'last_bleed'],
+    ['Cycle status', 'cycle_status'], ['Cycle details', 'cycle_details'],
+    ['— ENHANCEMENT —', null],
+    ['Current cycle', 'current_cycle'], ['Last time off cycle', 'last_off_cycle'],
+    ['— DAILY SCHEDULE —', null],
+    ['Typical day', 'schedule'],
+    ['— NUTRITION —', null],
+    ['Current diet', 'diet'], ['Allergies / dislikes', 'allergies'],
+    ['— TRAINING & CARDIO —', null],
+    ['Current cardio', 'cardio'], ['Days/week can train', 'training_days'],
+    ['— PHYSIQUE GOALS —', null],
+    ['Short-term physique', 'phys_short'], ['Long-term physique', 'phys_long'],
+    ['— LIFESTYLE GOALS —', null],
+    ['Short-term life', 'life_short'], ['Long-term life', 'life_long'],
+    ['— BUSINESS GOALS —', null],
+    ['Short-term business', 'biz_short'], ['Long-term business', 'biz_long'],
+  ];
+
+  function buildMessage(data){
+    let lines = ['*SS COACHING — NEW CLIENT ONBOARDING*', ''];
+    for (const [label, key] of FIELDS){
+      if (key === null){ lines.push('', '*' + label.replace(/—/g,'').trim() + '*'); continue; }
+      const v = (data[key] || '').toString().trim();
+      lines.push(label + ': ' + (v || '—'));
+    }
+    lines.push('', '📸 Photos (front / back / side) attached below 👇');
+    return lines.join('\n');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form.checkValidity()){
+      errEl.style.display = 'block';
+      const firstBad = form.querySelector(':invalid');
+      if (firstBad) firstBad.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    errEl.style.display = 'none';
+
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    // Optional: also POST to a backend (email Stephen / save to DB). Dev wires later.
+    if (SUBMIT_ENDPOINT){
+      try {
+        await fetch(SUBMIT_ENDPOINT, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ coach:'Stephen Sharpe', product:'SS Coaching', submittedAt:new Date().toISOString(), answers:data })
+        });
+      } catch(err){ /* non-blocking — WhatsApp hand-off still proceeds */ }
+    }
+
+    // Persist for the welcome page (name greeting) — our own key only.
+    try { localStorage.setItem('ss_onboard_name', data.full_name || ''); } catch(_){}
+
+    // Hand off to WhatsApp with the full message pre-filled.
+    const msg = encodeURIComponent(buildMessage(data));
+    const waUrl = 'https://wa.me/' + COACH_WHATSAPP + '?text=' + msg;
+    window.open(waUrl, '_blank');
+
+    // Send the client to their welcome page with the coaching packs.
+    window.location.href = 'welcome.html';
+  });
+
+  // ── Fallbacks for clients without WhatsApp ─────────────────────────────────
+  function validateOrWarn(){
+    if (!form.checkValidity()){
+      errEl.style.display = 'block';
+      const firstBad = form.querySelector(':invalid');
+      if (firstBad) firstBad.scrollIntoView({behavior:'smooth', block:'center'});
+      return false;
+    }
+    errEl.style.display = 'none';
+    return true;
+  }
+  function currentData(){ return Object.fromEntries(new FormData(form).entries()); }
+
+  document.getElementById('emailBtn').addEventListener('click', () => {
+    if (!validateOrWarn()) return;
+    const data = currentData();
+    try { localStorage.setItem('ss_onboard_name', data.full_name || ''); } catch(_){}
+    const subject = encodeURIComponent('SS Coaching — Onboarding — ' + (data.full_name || 'New client'));
+    const body = encodeURIComponent(buildMessage(data) + '\n\n(Please attach your front, back & side photos to this email.)');
+    const to = COACH_EMAIL || '';
+    window.location.href = 'mailto:' + to + '?subject=' + subject + '&body=' + body;
+    setTimeout(() => { window.location.href = 'welcome.html'; }, 800);
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    if (!validateOrWarn()) return;
+    const data = currentData();
+    try { localStorage.setItem('ss_onboard_name', data.full_name || ''); } catch(_){}
+    const text = buildMessage(data);
+    try { await navigator.clipboard.writeText(text); }
+    catch(_){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+    const c = document.getElementById('copied'); c.classList.add('show');
+    setTimeout(() => c.classList.remove('show'), 4000);
+  });
+</script>
+</body>
+</html>
