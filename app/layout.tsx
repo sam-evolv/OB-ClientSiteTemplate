@@ -9,11 +9,12 @@ export const metadata: Metadata = {
   description: 'Premium data-driven websites for bookable local service businesses.',
   icons: {
     icon: [
+      { url: '/favicon.ico', type: 'image/x-icon' },
       { url: '/favicon-empiregym-v2.ico', type: 'image/x-icon' },
       { url: '/empiregym-icon-v2.png', type: 'image/png', sizes: '64x64' }
     ],
-    apple: '/empiregym-apple-touch-icon-v2.png',
-    shortcut: '/favicon-empiregym-v2.ico'
+    apple: ['/apple-touch-icon.png', '/empiregym-apple-touch-icon-v2.png'],
+    shortcut: '/favicon.ico'
   }
 };
 
