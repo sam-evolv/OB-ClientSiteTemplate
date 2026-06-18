@@ -290,8 +290,7 @@ function StickyNav({ visible, business }) {
           <img src={LOGO_URL} alt={business.name} width={36} height={36}
             style={{
               borderRadius: '50%',
-              filter: 'invert(1)',
-              background: '#080808'
+              background: 'transparent'
             }} />
           <span className="nav-name">{business.name}</span>
         </button>
@@ -821,8 +820,7 @@ function Site({ b }) {
             <img src={LOGO_URL} alt={b.name} width={44} height={44}
               style={{
                 borderRadius: '50%',
-                filter: 'invert(1)',
-                background: '#080808',
+                background: 'transparent',
                 flexShrink: 0
               }} />
             <div style={{
@@ -1017,8 +1015,7 @@ function Site({ b }) {
             <img src={LOGO_URL} alt={b.name} width={84} height={84}
               style={{
                 borderRadius: '50%',
-                filter: 'invert(1)',
-                background: '#080808'
+                background: 'transparent'
               }} />
           </div>
 
@@ -1656,8 +1653,7 @@ function Site({ b }) {
             <img src={LOGO_URL} alt={b.name} width={44} height={44}
               style={{
                 borderRadius: '50%',
-                filter: 'invert(1)',
-                background: '#080808',
+                background: 'transparent',
                 opacity: 0.85,
                 flexShrink: 0
               }} />
