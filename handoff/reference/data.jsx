@@ -66,8 +66,8 @@ const business = {
   ],
 
   // ── Contact ───────────────────────────────────────────────────────────────
-  phone: '087 409 1291',
-  email: 'hello@simplygolf365.ie',
+  phone: '087 358 3577',
+  email: 'simplygolf365@gmail.com',
   instagram: '@simplygolf365',
   instagram_url: 'https://instagram.com/simplygolf365',
 

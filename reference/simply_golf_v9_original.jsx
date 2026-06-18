@@ -54,8 +54,8 @@ const business = {
     further: "Anywhere in Ireland — quote on enquiry."
   },
 
-  phone: "087 409 1291",
-  email: "hello@simplygolf365.ie",
+  phone: "087 358 3577",
+  email: "simplygolf365@gmail.com",
   instagram: "@simplygolf365",
 
   hero_image: {
