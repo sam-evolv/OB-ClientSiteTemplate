@@ -116,6 +116,40 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
           >
             Cork, Ireland
           </div>
+          {(b.privacy_url || b.terms_url) && (
+            <div
+              style={{
+                fontFamily: FONT_SANS,
+                fontSize: 12,
+                color: 'rgba(255,255,255,0.55)',
+                letterSpacing: '0.01em',
+                marginTop: 10,
+                display: 'inline-flex',
+                gap: 8,
+                alignItems: 'center'
+              }}
+            >
+              {b.privacy_url && (
+                <a
+                  href={b.privacy_url}
+                  style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.2)' }}
+                >
+                  Privacy
+                </a>
+              )}
+              {b.privacy_url && b.terms_url && (
+                <span style={{ opacity: 0.4 }}>·</span>
+              )}
+              {b.terms_url && (
+                <a
+                  href={b.terms_url}
+                  style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.2)' }}
+                >
+                  Terms
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
