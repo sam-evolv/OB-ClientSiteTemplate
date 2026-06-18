@@ -146,14 +146,11 @@ const business = {
     {
       id: 'events',
       title: 'Events & corporate',
-      blurb:
-        'We bring the dome to your venue and run the day. Up to 30 guests.',
+      blurb: 'Corporate bookings and private gatherings. Private events are quoted on enquiry so the setup time is priced properly.',
       services: [
-        { name: 'Half-Day Corporate',     duration: '4 hours',  price:  650, description: 'Up to 20 guests. Closest-to-pin, longest-drive, team leaderboard.',                  popular: false },
-        { name: 'Full-Day Corporate',     duration: '8 hours',  price: 1200, description: 'Team-building format. Format brief, leaderboards, prizes, branded scorecards.',     popular: true  },
-        { name: 'Stag / Hen Package',     duration: '3 hours',  price:  450, description: 'Group of 10 to 12. Food and drinks tie-ins available.',                              popular: false },
-        { name: 'Christmas Office Party', duration: '4 hours',  price:  750, description: 'Seasonal pricing. Mulled wine package optional.',                                   popular: false },
-      ],
+        { name: 'Corporate day rate',     duration: '8 hours',  price: 1500, description: 'Best for team days and corporate bookings. Private events are quoted on enquiry so the setup time is priced properly.', popular: true },
+        { name: 'Private gatherings',     duration: 'Bespoke',  price: null, description: 'Tell us the brief and we will figure out the right price on enquiry.',                              popular: false }
+      ]
     },
     {
       id: 'coaching',

@@ -163,10 +163,10 @@ export const simplyGolf: BusinessVM = {
     {
       id: 'events',
       title: 'Events & corporate',
-      blurb: 'Corporate bookings, team days, and full venue takeovers. Private events are quoted on enquiry.',
+      blurb: 'Corporate bookings and private gatherings. Private events are quoted on enquiry so the setup time is priced properly.',
       services: [
         { name: 'Corporate day rate', duration: '8 hours', price: 1500, description: 'Best for team days and corporate bookings. Private events are quoted on enquiry so the setup time is priced properly.', popular: true },
-        { name: 'Christmas Office Party', duration: '4 hours', price: 750, description: 'Seasonal pricing. Mulled wine package optional.', popular: false }
+        { name: 'Private gatherings', duration: 'Bespoke', price: null, description: 'Tell us the brief and we will figure out the right price on enquiry.', popular: false }
       ]
     },
     {
