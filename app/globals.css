@@ -3,28 +3,38 @@
 @tailwind utilities;
 
 /*
- * OpenBook design system, global styles.
+ * OpenBook customer site — global styles.
  *
- * Only the design system lives here. No business-specific styling. Section
- * components own their own visual rules using these tokens.
- *
- * Tokens come from reference/openbook_template_brief.md Part 4 and the
- * polished CSS at the bottom of reference/simply_golf_v9.jsx.
+ * Locked design-system tokens, ambient motion keyframes, film grain, the hover
+ * vocabulary and the responsive rules. Ported value-for-value from
+ * handoff/reference/styles.css. These never change per business; the only
+ * per-business injection is --accent, set inline on the page root by the
+ * orchestrator (components/MarketingPage.tsx).
  */
 
 :root {
+  --bg: #080808;
+  --fg: #fafafa;
+  --ob-gold: #d4af37;
+  --ob-gold-soft: #e8c76b;
+
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.35);
   --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.7), 0 12px 24px rgba(0, 0, 0, 0.4);
   --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --bg: #080808;
+
+  /* Elevated surfaces — graduated white washes used by section backgrounds. */
   --bg-elevated-1: rgba(255, 255, 255, 0.022);
   --bg-elevated-2: rgba(255, 255, 255, 0.028);
   --bg-elevated-3: rgba(255, 255, 255, 0.035);
-  /* Default accent. Per-page accent is injected inline by the page orchestrator
-     via <main style={{ '--accent': business.primary_colour }}>. */
+
+  /* Font scale — Tweak-controlled in the reference, fixed at 1.0 in production. */
+  --font-scale: 1;
+
+  /* Default accent. Per-page accent is injected inline by the orchestrator via
+     <main style={{ '--accent': primary_colour }}>. */
   --accent: #f5f5f4;
 }
 
@@ -32,18 +42,24 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-fraunces), Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 html {
   scroll-behavior: smooth;
-  background: var(--bg);
 }
 
 body {
-  margin: 0;
-  color: #fafafa;
-  background: var(--bg);
-  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: calc(16px * var(--font-scale));
   font-variant-numeric: lining-nums;
-  -webkit-font-smoothing: antialiased;
 }
 
 img {
@@ -56,12 +72,61 @@ a {
   text-decoration: none;
 }
 
-/* -----------------------------------------------------------------------------
- * Film grain overlay. Fixed across the viewport at z-index 60, 4.5% opacity.
- * Applied via the .film-grain class on the page-level main element. The SVG
- * is inlined to keep this a single global asset, not per-section.
- * -------------------------------------------------------------------------- */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
 
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Ambient hero motion — three layered animations the eye reads as "alive". */
+@keyframes heroBreath {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.025);
+  }
+}
+@keyframes heroDrift {
+  0%,
+  100% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 53% 47%;
+  }
+}
+@keyframes vignettePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.92;
+  }
+}
+
+.hero-bg-ambient {
+  animation:
+    heroBreath 16s ease-in-out 2400ms infinite,
+    heroDrift 60s ease-in-out 2400ms infinite;
+}
+.hero-vignette {
+  animation: vignettePulse 8s ease-in-out 2400ms infinite;
+}
+
+/* Film grain overlay — 4.5% noise, fixed across viewport, mixes over content. */
 .film-grain::after {
   content: '';
   position: fixed;
@@ -73,17 +138,47 @@ a {
   background-image: url("data:image/svg+xml;utf8,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* -----------------------------------------------------------------------------
- * Eyebrow with leading horizontal mark. 28px hairline before any element with
- * this class, used at the top of every section.
- * -------------------------------------------------------------------------- */
+/* Gallery responsive mosaic — collapses 12 → 6 → 12 */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 10px;
+}
+@media (max-width: 800px) {
+  .gallery-item-0,
+  .gallery-item-1,
+  .gallery-item-4 {
+    grid-column: span 12 !important;
+  }
+  .gallery-item-2,
+  .gallery-item-3 {
+    grid-column: span 6 !important;
+  }
+}
+@media (max-width: 480px) {
+  .gallery-item {
+    grid-column: span 12 !important;
+  }
+}
 
+/* Sticky nav has a faint gradient at the bottom edge — content "slides under" */
+.sticky-nav-edge::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -16px;
+  height: 16px;
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0.5) 0%, rgba(8, 8, 8, 0) 100%);
+  pointer-events: none;
+}
+
+/* Eyebrow — small horizontal mark before the label */
 .eyebrow-mark {
   display: inline-flex;
   align-items: center;
   gap: 12px;
 }
-
 .eyebrow-mark::before {
   content: '';
   display: inline-block;
@@ -94,21 +189,17 @@ a {
   flex-shrink: 0;
 }
 
-/* -----------------------------------------------------------------------------
- * Primary CTA hover treatment. Lift 2px, brighten 5%, deeper shadow on hover.
- * Snap back on active.
- * -------------------------------------------------------------------------- */
-
+/* Primary CTA — material-feeling lift on hover */
 @media (hover: hover) {
   .cta-primary {
     transition:
-      transform 300ms var(--ease-out-expo),
-      box-shadow 300ms var(--ease-out-expo),
-      filter 200ms ease;
+      transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      filter 200ms ease !important;
   }
   .cta-primary:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-xl), var(--inset-highlight);
+    box-shadow: var(--shadow-xl), var(--inset-highlight) !important;
     filter: brightness(1.05);
   }
   .cta-primary:active {
@@ -117,10 +208,226 @@ a {
   }
 }
 
-/* -----------------------------------------------------------------------------
- * Reduced motion. Strip all animation, all smooth scroll. Mandatory per the
- * do-not list in the brief.
- * -------------------------------------------------------------------------- */
+/* Secondary CTA — quiet lift, lightened glass. */
+.cta-secondary {
+  transition:
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 250ms ease,
+    border-color 250ms ease !important;
+}
+@media (hover: hover) {
+  .cta-secondary:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+  }
+  .cta-secondary:active {
+    transform: translateY(0);
+    transition-duration: 100ms;
+  }
+}
+
+/* Pills (status + trust signals) — quiet brighten + small lift.
+   Set --hover-accent on the element so brand pills can tint with the accent. */
+.hover-pill {
+  transition:
+    transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 250ms ease,
+    border-color 250ms ease !important;
+}
+@media (hover: hover) {
+  .hover-pill:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: var(--hover-accent, rgba(255, 255, 255, 0.18)) !important;
+  }
+}
+
+/* Cards (press, travel zones, contact methods) — lift + accent halo border. */
+.hover-card {
+  transition:
+    transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 350ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 250ms ease,
+    background 250ms ease !important;
+}
+@media (hover: hover) {
+  .hover-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--hover-accent, rgba(255, 255, 255, 0.18)) !important;
+  }
+}
+
+/* Sticky nav book button — same lift + glow as the hero primary. */
+.nav-book {
+  transition:
+    transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 200ms ease !important;
+}
+@media (hover: hover) {
+  .nav-book:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--hover-accent, rgba(255, 255, 255, 0.4));
+    filter: brightness(1.05);
+  }
+  .nav-book:active {
+    transform: translateY(0);
+    transition-duration: 100ms;
+  }
+}
+
+/* OpenBook badge — single image, subtle hover lift + accent glow */
+.ob-badge {
+  display: inline-block;
+  transition:
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 280ms ease;
+  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.18));
+}
+@media (hover: hover) {
+  .ob-badge:hover {
+    transform: translateY(-2px) scale(1.03);
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.55))
+      brightness(1.06);
+  }
+  .ob-badge:active {
+    transform: translateY(0) scale(1.01);
+    transition-duration: 120ms;
+  }
+}
+
+/* Service card hover — price lifts, arrow shifts */
+@media (hover: hover) {
+  .service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .service-card:hover .service-price {
+    transform: scale(1.06);
+  }
+  .service-card:hover .service-cta {
+    transform: translateX(4px);
+    color: #fafafa;
+  }
+}
+
+/* Sticky-nav-link active dot under label */
+.nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: var(--font-geist), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 200ms ease;
+  position: relative;
+}
+.nav-link:hover {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Brand logo hover — subtle lift, slight tilt, accent glow.
+   Defaults to white glow; the hero/sticky nav set --logo-glow to the accent. */
+.brand-logo {
+  transition:
+    transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 500ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 400ms ease;
+  /* Carry a faint resting shadow so the lift on hover doesn't feel sudden. */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+}
+@media (hover: hover) {
+  .brand-logo:hover {
+    transform: translateY(-2px) rotate(8deg) scale(1.06);
+    box-shadow:
+      0 14px 36px rgba(0, 0, 0, 0.5),
+      0 0 0 1px var(--logo-glow, rgba(255, 255, 255, 0.18)),
+      0 0 36px var(--logo-glow, rgba(255, 255, 255, 0.2));
+    filter: invert(1) brightness(1.08);
+  }
+  .brand-logo:active {
+    transform: translateY(0) rotate(8deg) scale(1.02);
+    transition-duration: 150ms;
+  }
+}
+
+/* Footer hero logo — always-on ambient glow + slow rotate on hover.
+   The wrapper renders the halo; the inner img keeps the hover transform. */
+.footer-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  cursor: pointer;
+}
+.footer-logo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--logo-glow, rgba(255, 255, 255, 0.18)) 0%, transparent 65%);
+  filter: blur(4px);
+  opacity: 0.85;
+  animation: footerGlow 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes footerGlow {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+.footer-logo img {
+  position: relative;
+  border-radius: 50%;
+  filter: invert(1);
+  background: #080808;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--logo-glow, rgba(255, 255, 255, 0.1));
+  transition:
+    transform 800ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 600ms ease,
+    filter 400ms ease;
+}
+@media (hover: hover) {
+  .footer-logo:hover img {
+    transform: rotate(360deg) scale(1.05);
+    box-shadow:
+      0 20px 50px rgba(0, 0, 0, 0.6),
+      0 0 0 1px var(--logo-glow, rgba(255, 255, 255, 0.3)),
+      0 0 60px var(--logo-glow, rgba(255, 255, 255, 0.35));
+    filter: invert(1) brightness(1.1);
+  }
+}
+
+@media (max-width: 880px) {
+  .nav-links {
+    display: none !important;
+  }
+  .nav-menu-toggle {
+    display: flex !important;
+  }
+}
+@media (max-width: 640px) {
+  .hero-phone {
+    display: none !important;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -129,19 +436,8 @@ a {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
   html {
     scroll-behavior: auto !important;
   }
-}
-
-/* -----------------------------------------------------------------------------
- * Focus visible. Single keyboard ring used everywhere.
- * -------------------------------------------------------------------------- */
-
-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid #fafafa;
-  outline-offset: 2px;
 }

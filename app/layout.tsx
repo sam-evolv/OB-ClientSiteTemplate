@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { fontClassName } from '@/lib/fonts';
 import './globals.css';
@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     icon: '/empiregym-favicon.ico',
     apple: '/empiregym-apple-touch-icon.png'
   }
+};
+
+// Matches the design reference: <meta name="theme-color" content="#080808">.
+export const viewport: Viewport = {
+  themeColor: '#080808'
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

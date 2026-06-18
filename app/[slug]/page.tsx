@@ -1,38 +1,40 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { loadBusinessForMarketing } from '@/lib/queries/loadBusinessForMarketing';
 import { MarketingPage } from '@/components/MarketingPage';
+import { resolveBySlug, buildJsonLd, buildMetadata } from '@/lib/business/resolve';
 
 export const revalidate = 60;
 
 type PageProps = { params: Promise<{ slug: string }> };
 
 /**
- * Single business marketing page. Reads directly from the businesses
- * table (plus services, business_hours, business_media) by slug, and
- * renders a fixed-order MarketingPage. The page knows nothing about
- * section types; the section components decide whether to render
- * based on data.
+ * Single business marketing page, addressed by slug (e.g. /simplygolf365).
+ * Renders a fixed-order MarketingPage from the view-model; the section
+ * components decide whether to render based on data.
  */
 export default async function BusinessPage({ params }: PageProps) {
   const { slug } = await params;
-  const data = await loadBusinessForMarketing(slug);
-  if (!data) notFound();
-  return <MarketingPage data={data} />;
+  const b = await resolveBySlug(slug);
+  if (!b) notFound();
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildJsonLd(b)) }}
+      />
+      <MarketingPage b={b} />
+    </>
+  );
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const data = await loadBusinessForMarketing(slug);
-  if (!data) return {};
-  const b = data.business;
-  return {
-    title: b.tagline ? `${b.name} | ${b.tagline}` : b.name,
-    description: b.website_hero_subhead ?? b.description ?? b.tagline ?? undefined,
-    openGraph: {
-      title: b.name,
-      description: b.website_hero_subhead ?? b.tagline ?? undefined,
-      images: b.website_hero_image_url ? [{ url: b.website_hero_image_url }] : []
-    }
-  };
+  const b = await resolveBySlug(slug);
+  if (!b) return {};
+  // The slug route is never the canonical host, so it is always noindex and
+  // canonicalises to the tenant's custom domain (when one is set).
+  const host = (await headers()).get('host');
+  return buildMetadata(b, { host, canonicalRoute: false });
 }

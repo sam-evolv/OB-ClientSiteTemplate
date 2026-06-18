@@ -1,6 +1,10 @@
 node_modules
 .next
 out
+
+# Handoff media is the original delivery; the app's working copies live in
+# public/media (committed). Keep the large originals (incl. video) out of git.
+handoff/media/
 .env
 .env*.local
 .vercel
