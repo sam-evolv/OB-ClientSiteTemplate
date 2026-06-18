@@ -320,9 +320,6 @@ export function toBusinessViewModel(
   const logoMedia = pickMedia(data.media, 'logo');
 
   const travel = (b.travel_zones as BusinessVM['travel']) ?? null;
-  const logo = b.slug === 'empire-gym'
-    ? '/media/empiregym-logo.svg'
-    : logoMedia?.url ?? b.logo_url ?? '';
 
   return {
     name: b.name,
@@ -356,7 +353,7 @@ export function toBusinessViewModel(
     email: b.email ?? '',
     instagram: b.instagram_handle ?? '',
     instagram_url: instagramUrlFrom(b.instagram_handle, b.instagram_url ?? null),
-    logo,
+    logo: logoMedia?.url ?? b.logo_url ?? '',
     hero_image: {
       url: heroMedia?.url ?? b.website_hero_image_url ?? '',
       alt: heroMedia?.alt ?? undefined,
