@@ -84,10 +84,10 @@ export const simplyGolf: BusinessVM = {
     },
     {
       stat: 'Indoor Venues',
-      label: '10m × 5m\nMinimum floor space\n\n3m\nMinimum ceiling height'
+      label: '10m × 5m minimum floor space\n3m minimum ceiling height'
     },
-    { stat: 'Indoor Only', label: 'Hall, marquee, warehouse or Office.' },
-    { stat: 'Standard 13A', label: 'Power supply' }
+    { stat: 'Indoor Only', label: 'Hall, marquee, warehouse or Office' },
+    { stat: 'Standard 13A', label: 'Standard 13A power supply' }
   ],
 
   // ── Contact ───────────────────────────────────────────────────────────────
