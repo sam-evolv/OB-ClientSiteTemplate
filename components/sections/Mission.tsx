@@ -61,7 +61,7 @@ export function Mission({ b, accent }: { b: BusinessVM; accent: string }) {
             alt={b.name}
             width={84}
             height={84}
-            style={{ borderRadius: '50%', filter: 'invert(1)', background: '#080808' }}
+            style={{ borderRadius: '50%', background: 'transparent' }}
           />
         </div>
 

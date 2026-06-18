@@ -77,10 +77,9 @@ export function StickyNav({
             style={
               {
                 borderRadius: '50%',
-                filter: 'invert(1)',
-                background: '#080808',
+                background: 'transparent',
                 '--logo-glow': `${accent}55`
-              } as CSSProperties
+                } as CSSProperties
             }
           />
         </button>

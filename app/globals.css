@@ -351,7 +351,6 @@ a:focus-visible {
       0 14px 36px rgba(0, 0, 0, 0.5),
       0 0 0 1px var(--logo-glow, rgba(255, 255, 255, 0.18)),
       0 0 36px var(--logo-glow, rgba(255, 255, 255, 0.2));
-    filter: invert(1) brightness(1.08);
   }
   .brand-logo:active {
     transform: translateY(0) rotate(8deg) scale(1.02);
@@ -394,8 +393,7 @@ a:focus-visible {
 .footer-logo img {
   position: relative;
   border-radius: 50%;
-  filter: invert(1);
-  background: #080808;
+  background: transparent;
   box-shadow:
     0 12px 36px rgba(0, 0, 0, 0.5),
     0 0 0 1px var(--logo-glow, rgba(255, 255, 255, 0.1));
@@ -411,7 +409,6 @@ a:focus-visible {
       0 20px 50px rgba(0, 0, 0, 0.6),
       0 0 0 1px var(--logo-glow, rgba(255, 255, 255, 0.3)),
       0 0 60px var(--logo-glow, rgba(255, 255, 255, 0.35));
-    filter: invert(1) brightness(1.1);
   }
 }
 

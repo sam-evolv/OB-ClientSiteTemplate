@@ -247,8 +247,7 @@ export function Hero({
           style={
             {
               borderRadius: '50%',
-              filter: 'invert(1)',
-              background: '#080808',
+              background: 'transparent',
               flexShrink: 0,
               '--logo-glow': `${accent}55`
             } as CSSProperties
