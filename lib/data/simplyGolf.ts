@@ -37,16 +37,16 @@ export const simplyGolf: BusinessVM = {
   primary_colour: '#F5F5F4',
 
   // ── Copy ──────────────────────────────────────────────────────────────────
-  tagline: 'Golf. Anywhere you want it.',
+  tagline: 'Corporate golf. Anywhere you want it.',
   hero_headline_1: 'We bring',
   hero_headline_2: 'the course to you.',
   hero_subhead:
-    'A 25-foot inflatable dome with a Foresight simulator inside. Built for events, workplaces and private gatherings, anywhere in Munster, rain or shine.',
+    'A 23-foot inflatable dome with a Foresight simulator inside. Built for events, workplaces and private gatherings, anywhere in Munster, rain or shine.',
   hero_variant: 'photo',
 
   about: {
     headline: 'Why this exists.',
-    body: "The idea came over dinner in late 2024. Jack was working in golf at Fota and Old Head, weighing up a move abroad, and didn't want it. He wanted to stay in Irish golf, but bring it somewhere new. So he built it: a dome that travels, a screen that doesn't care about the weather, a way for the people who'd never set foot on a course to have a brilliant evening playing one."
+    body: "The idea came over dinner in late 2024. Jack was working in golf at Fota and Old Head, weighing up a move abroad, and didn't want it. He wanted to stay in Irish golf, but bring it somewhere new. So he built it: a 23-foot dome that travels, a screen that doesn't care about the weather, and a way to bring a proper golf experience to corporate events and private bookings across Munster."
   },
 
   // ── Founder ───────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ export const simplyGolf: BusinessVM = {
   stats: [
     { value: 'PGA', label: 'Professional coach' },
     { value: 'Foresight', label: 'Simulator tech' },
-    { value: '25', suffix: ' ft', label: 'Inflatable dome' },
+    { value: '23', suffix: ' ft', label: 'Inflatable dome' },
     { value: '30', prefix: '≤ ', label: 'Guests per event' },
     { value: '2', suffix: ' hrs', label: 'Full setup time' }
   ],
@@ -163,11 +163,9 @@ export const simplyGolf: BusinessVM = {
     {
       id: 'events',
       title: 'Events & corporate',
-      blurb: 'We bring the dome to your venue and run the day. Up to 30 guests.',
+      blurb: 'Corporate bookings, team days, and full venue takeovers. Private events are quoted on enquiry.',
       services: [
-        { name: 'Half-Day Corporate', duration: '4 hours', price: 650, description: 'Up to 20 guests. Closest-to-pin, longest-drive, team leaderboard.', popular: false },
-        { name: 'Full-Day Corporate', duration: '8 hours', price: 1200, description: 'Team-building format. Format brief, leaderboards, prizes, branded scorecards.', popular: true },
-        { name: 'Stag / Hen Package', duration: '3 hours', price: 450, description: 'Group of 10 to 12. Food and drinks tie-ins available.', popular: false },
+        { name: 'Corporate day rate', duration: '8 hours', price: 1500, description: 'Best for team days and corporate bookings. Private events are quoted on enquiry so the setup time is priced properly.', popular: true },
         { name: 'Christmas Office Party', duration: '4 hours', price: 750, description: 'Seasonal pricing. Mulled wine package optional.', popular: false }
       ]
     },
@@ -184,11 +182,9 @@ export const simplyGolf: BusinessVM = {
     {
       id: 'private',
       title: 'Private gatherings',
-      blurb: "Birthday, anniversary, fundraiser, or just a few mates. Smaller groups, your venue.",
+      blurb: 'Birthday, anniversary, fundraiser, or private booking. Custom events are quoted properly on enquiry.',
       services: [
-        { name: 'Group of 4', duration: '2 hours', price: 220, description: 'Compact setup. Suits home garages and small venues.', popular: false },
-        { name: 'Group of 8', duration: '3 hours', price: 380, description: 'The popular size. Full dome experience.', popular: true },
-        { name: 'Custom event', duration: 'Bespoke', price: null, description: "Tell us what you need. We'll quote.", popular: false }
+        { name: 'Custom event', duration: 'Bespoke', price: null, description: 'Tell us the brief and we will quote it properly.', popular: false }
       ]
     }
   ],

@@ -222,7 +222,7 @@ export function WhereWeGo({ b, accent }: { b: BusinessVM; accent: string }) {
               fontFamily: FONT_SERIF
             }}
           >
-            Not sure if your venue works? Send a photo and we&apos;ll confirm in under 24 hours.
+            The dome is 23 feet across. If you are not sure whether a venue works, send a photo and we&apos;ll confirm the fit before you book.
           </div>
         </div>
       </div>
