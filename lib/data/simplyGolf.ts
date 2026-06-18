@@ -96,6 +96,14 @@ export const simplyGolf: BusinessVM = {
   instagram: '@simplygolf365',
   instagram_url: 'https://instagram.com/simplygolf365',
 
+  // ── Legal (per-tenant footer links) ───────────────────────────────────────
+  // Self-hosted GDPR Privacy Policy + EU Consumer Rights Directive Terms of
+  // Service, served as static pages from /public/simplygolf365/. Same-site paths
+  // (not absolute URLs) so they resolve on the tenant's own host, local dev and
+  // preview alike. The Footer renders the links only when these are set.
+  privacy_url: '/simplygolf365/privacy.html',
+  terms_url: '/simplygolf365/terms.html',
+
   // ── Media ─────────────────────────────────────────────────────────────────
   logo: `${MEDIA}/logo.png`,
   hero_image: {

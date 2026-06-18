@@ -94,6 +94,10 @@ const businessFields = {
   website_stats: b.stats,
   press_mentions: b.press_mentions,
   testimonials: b.testimonials,
+  // Per-tenant legal pages surfaced in the marketing footer (GDPR + EU Consumer
+  // Rights Directive). Static pages served from /public/simplygolf365/.
+  privacy_url: b.privacy_url,
+  terms_url: b.terms_url,
   is_live: true,
   website_is_published: true
 };
