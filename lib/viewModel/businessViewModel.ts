@@ -45,12 +45,18 @@ export type GalleryItem =
 
 export type Stat = { value: string; prefix?: string; suffix?: string; label: string };
 
+export type ServiceCTA = { label: string; href: string };
+
 export type ServiceVM = {
   name: string;
   duration: string;
   price: number | null;
   description: string;
   popular: boolean;
+  /** Optional real CTA (Stripe / WhatsApp / onboarding / Instagram). When absent the card shows the static "Enquire →". */
+  cta?: ServiceCTA | null;
+  /** Optional qualifier shown next to the price, e.g. "/ mo". */
+  price_suffix?: string | null;
 };
 
 export type ServiceGroupVM = {
@@ -191,7 +197,11 @@ function toServiceGroups(services: ServiceRow[]): ServiceGroupVM[] {
       // here. No real service is €0, so 0 is a safe on-enquiry sentinel.
       price: s.price_cents === null || s.price_cents === 0 ? null : Math.round(s.price_cents / 100),
       description: s.description ?? '',
-      popular: Boolean(s.is_popular)
+      popular: Boolean(s.is_popular),
+      // A CTA renders only when both a destination and a label are present;
+      // otherwise the card keeps the default static "Enquire →".
+      cta: s.cta_url && s.cta_label ? { label: s.cta_label, href: s.cta_url } : null,
+      price_suffix: s.price_suffix ?? null
     });
   }
   return groups;
