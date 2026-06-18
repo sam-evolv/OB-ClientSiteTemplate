@@ -1028,7 +1028,7 @@ function WhereWeGo({ b, accent }) {
                 }}>
                   {r.stat}
                 </div>
-                <div style={{ fontSize: 13, opacity: 0.7 }}>{r.label}</div>
+                <div style={{ fontSize: 13, opacity: 0.7, whiteSpace: 'pre-line' }}>{r.label}</div>
               </div>
             ))}
           </div>
@@ -1036,7 +1036,7 @@ function WhereWeGo({ b, accent }) {
             fontSize: 13, opacity: 0.55, marginTop: 20, fontStyle: 'italic',
             fontFamily: 'Fraunces, Georgia, serif',
           }}>
-            Not sure if your venue works? Send a photo and we'll confirm in under 24 hours.
+            The dome is 23 feet across. If you are not sure whether a venue works, send a photo and we'll confirm the fit before you book.
           </div>
         </div>
       </div>

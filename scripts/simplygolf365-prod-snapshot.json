@@ -60,12 +60,12 @@
     ],
     "venue_requirements": {
       "items": [
-        { "stat": "8 x 8 m", "label": "Floor space" },
-        { "stat": "8 m", "label": "Ceiling height" },
-        { "stat": "Indoor", "label": "Hall, marquee or warehouse" },
+        { "stat": "Outdoor Events", "label": "Standard Dome\n5m × 5m footprint\n6m × 6m recommended space\n\nLarge Dome\n7m × 7m footprint\n8m × 8m recommended space" },
+        { "stat": "Indoor Venues", "label": "10m × 5m\nMinimum floor space\n\n3m\nMinimum ceiling height" },
+        { "stat": "Indoor Only", "label": "Hall, marquee, warehouse or Office." },
         { "stat": "Standard 13A", "label": "Power supply" }
       ],
-      "callout": "Not sure if your venue works? Send a photo and we will confirm in under 24 hours.",
+      "callout": "The dome is 23 feet across. If you are not sure whether a venue works, send a photo and we'll confirm the fit before you book.",
       "eyebrow": "Venue requirements"
     },
     "testimonials": [
@@ -78,9 +78,7 @@
     { "id": "a71a3f4d-3657-4eef-a66b-2408846ce919", "name": "Private gatherings", "description": "Tell us the brief and we will figure out the right price on enquiry.", "duration_minutes": 0, "price_cents": 0, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 2, "group_name": "Events and Corporate" },
     { "id": "6c5e09d3-5cb6-4455-8124-781e687ee954", "name": "60-min Lesson", "description": "Swing analysis, technical work, video to take home.", "duration_minutes": 60, "price_cents": 6500, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 5, "group_name": "1-to-1 Coaching" },
     { "id": "9ee94a28-f795-4b2c-ba65-c0c0d503e08c", "name": "Lesson Block x 5", "description": "Save 45. Structured progression plan with Foresight data.", "duration_minutes": 300, "price_cents": 28000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 6, "group_name": "1-to-1 Coaching" },
-    { "id": "1e656b92-1e9b-4e89-99f0-0a89e521faf4", "name": "Ladies Get Into Golf", "description": "Introductory session for new and returning women golfers.", "duration_minutes": 60, "price_cents": 4000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 7, "group_name": "1-to-1 Coaching" },
-    { "id": "ac80002b-6906-43ff-9a04-91a6d81f7e1d", "name": "Group of 4", "description": "Compact setup. Suits home garages and small venues.", "duration_minutes": 120, "price_cents": 22000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 8, "group_name": "Private Gatherings" },
-    { "id": "445059ee-a624-4317-be0f-e35ee22f6d5f", "name": "Group of 8", "description": "The popular size. Full dome experience.", "duration_minutes": 180, "price_cents": 38000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 9, "group_name": "Private Gatherings" }
+    { "id": "1e656b92-1e9b-4e89-99f0-0a89e521faf4", "name": "Ladies Get Into Golf", "description": "Introductory session for new and returning women golfers.", "duration_minutes": 60, "price_cents": 4000, "capacity": 1, "colour": "#D4AF37", "is_active": true, "sort_order": 7, "group_name": "1-to-1 Coaching" }
   ],
   "business_media_rows": [
     { "id": "7789e389-d423-4896-aed6-db9ec9d16f60", "url": "/reference/v9-extracted/gallery-1.jpg", "caption": "Mid-swing on the Foresight simulator", "kind": "interior", "sort_order": 1 },

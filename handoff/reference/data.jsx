@@ -53,9 +53,15 @@ const business = {
   },
 
   venue_requirements: [
-    { stat: '8 × 8 m', label: 'Floor space' },
-    { stat: '8 m', label: 'Ceiling height' },
-    { stat: 'Indoor', label: 'Hall, marquee or warehouse' },
+    {
+      stat: 'Outdoor Events',
+      label: 'Standard Dome\n5m × 5m footprint\n6m × 6m recommended space\n\nLarge Dome\n7m × 7m footprint\n8m × 8m recommended space',
+    },
+    {
+      stat: 'Indoor Venues',
+      label: '10m × 5m\nMinimum floor space\n\n3m\nMinimum ceiling height',
+    },
+    { stat: 'Indoor Only', label: 'Hall, marquee, warehouse or Office.' },
     { stat: 'Standard 13A', label: 'Power supply' },
   ],
 
@@ -136,9 +142,9 @@ const business = {
   stats: [
     { value: 'PGA',       label: 'Professional coach' },
     { value: 'Foresight', label: 'Simulator tech' },
-    { value: '25', suffix: ' ft', label: 'Inflatable dome' },
-    { value: '30', prefix: '≤ ',  label: 'Guests per event' },
-    { value: '2',  suffix: ' hrs', label: 'Full setup time' },
+    { value: '23', suffix: ' feet', label: 'Inflatable dome' },
+    { value: '30', prefix: '≤ ', label: 'Guests per event' },
+    { value: '2', suffix: ' hrs', label: 'Full setup time' },
   ],
 
   // ── Services — three groups; "popular" marks the decoy mid-tier ───────────
@@ -166,13 +172,10 @@ const business = {
     {
       id: 'private',
       title: 'Private gatherings',
-      blurb:
-        "Birthday, anniversary, fundraiser, or just a few mates. Smaller groups, your venue.",
+      blurb: 'Birthday, anniversary, fundraiser, or private booking. Custom events are quoted properly on enquiry.',
       services: [
-        { name: 'Group of 4',  duration: '2 hours', price: 220,  description: 'Compact setup. Suits home garages and small venues.', popular: false },
-        { name: 'Group of 8',  duration: '3 hours', price: 380,  description: 'The popular size. Full dome experience.',             popular: true  },
-        { name: 'Custom event', duration: 'Bespoke', price: null, description: "Tell us what you need. We'll quote.",                 popular: false },
-      ],
+        { name: 'Custom event', duration: 'Bespoke', price: null, description: 'Tell us the brief and we will quote it properly.', popular: false }
+      ]
     },
   ],
 

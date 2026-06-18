@@ -209,7 +209,7 @@ export function WhereWeGo({ b, accent }: { b: BusinessVM; accent: string }) {
                 >
                   {r.stat}
                 </div>
-                <div style={{ fontSize: 13, opacity: 0.7 }}>{r.label}</div>
+                <div style={{ fontSize: 13, opacity: 0.7, whiteSpace: 'pre-line' }}>{r.label}</div>
               </div>
             ))}
           </div>

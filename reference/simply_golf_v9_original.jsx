@@ -1351,9 +1351,9 @@ function Site({ b }) {
               gap: 24
             }}>
               {[
-                { stat: "8 × 8 m", label: "Floor space" },
-                { stat: "8 m", label: "Ceiling height" },
-                { stat: "Indoor", label: "Hall, marquee or warehouse" },
+                { stat: "Outdoor Events", label: "Standard Dome\n5m × 5m footprint\n6m × 6m recommended space\n\nLarge Dome\n7m × 7m footprint\n8m × 8m recommended space" },
+                { stat: "Indoor Venues", label: "10m × 5m\nMinimum floor space\n\n3m\nMinimum ceiling height" },
+                { stat: "Indoor Only", label: "Hall, marquee, warehouse or Office." },
                 { stat: "Standard 13A", label: "Power supply" }
               ].map((r, i) => (
                 <div key={i}>
@@ -1364,7 +1364,7 @@ function Site({ b }) {
                   }}>
                     {r.stat}
                   </div>
-                  <div style={{ fontSize: 13, opacity: 0.7 }}>{r.label}</div>
+                  <div style={{ fontSize: 13, opacity: 0.7, whiteSpace: 'pre-line' }}>{r.label}</div>
                 </div>
               ))}
             </div>

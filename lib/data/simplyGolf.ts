@@ -78,9 +78,15 @@ export const simplyGolf: BusinessVM = {
   hours: [],
 
   venue_requirements: [
-    { stat: '8 × 8 m', label: 'Floor space' },
-    { stat: '8 m', label: 'Ceiling height' },
-    { stat: 'Indoor', label: 'Hall, marquee or warehouse' },
+    {
+      stat: 'Outdoor Events',
+      label: 'Standard Dome\n5m × 5m footprint\n6m × 6m recommended space\n\nLarge Dome\n7m × 7m footprint\n8m × 8m recommended space'
+    },
+    {
+      stat: 'Indoor Venues',
+      label: '10m × 5m\nMinimum floor space\n\n3m\nMinimum ceiling height'
+    },
+    { stat: 'Indoor Only', label: 'Hall, marquee, warehouse or Office.' },
     { stat: 'Standard 13A', label: 'Power supply' }
   ],
 
@@ -153,7 +159,7 @@ export const simplyGolf: BusinessVM = {
   stats: [
     { value: 'PGA', label: 'Professional coach' },
     { value: 'Foresight', label: 'Simulator tech' },
-    { value: '23', suffix: ' ft', label: 'Inflatable dome' },
+    { value: '23', suffix: ' feet', label: 'Inflatable dome' },
     { value: '30', prefix: '≤ ', label: 'Guests per event' },
     { value: '2', suffix: ' hrs', label: 'Full setup time' }
   ],
