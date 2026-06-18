@@ -57,6 +57,8 @@ export type ServiceVM = {
   cta?: ServiceCTA | null;
   /** Optional qualifier shown next to the price, e.g. "/ mo". */
   price_suffix?: string | null;
+  /** Optional secondary price line shown under the price, e.g. "Students €193". */
+  price_note?: string | null;
 };
 
 export type ServiceGroupVM = {
@@ -151,10 +153,12 @@ export type BusinessVM = {
 };
 
 /**
- * Price formatter — matches data.jsx: null → "On enquiry", otherwise the euro
- * amount with a leading € and no decimals (e.g. 650 → "€650").
+ * Price formatter: null → "On enquiry"; whole euros render with no decimals
+ * (650 → "€650"); fractional amounts render to two places (69.99 → "€69.99",
+ * 419.94 → "€419.94", guarding against float artefacts like 419.94000001).
  */
-export const formatPrice = (n: number | null): string => (n === null ? 'On enquiry' : `€${n}`);
+export const formatPrice = (n: number | null): string =>
+  n === null ? 'On enquiry' : `€${Number.isInteger(n) ? n : n.toFixed(2)}`;
 
 // -----------------------------------------------------------------------------
 // Supabase rows → BusinessVM
@@ -198,14 +202,17 @@ function toServiceGroups(services: ServiceRow[]): ServiceGroupVM[] {
       duration: s.duration_label ?? '',
       // services.price_cents is NOT NULL on the shared booking table, so the
       // "On enquiry" card (§5: null price) is seeded as 0 and read back as null
-      // here. No real service is €0, so 0 is a safe on-enquiry sentinel.
-      price: s.price_cents === null || s.price_cents === 0 ? null : Math.round(s.price_cents / 100),
+      // here. No real service is €0, so 0 is a safe on-enquiry sentinel. Cents
+      // are preserved (price_cents / 100) so prices like €69.99 are not rounded
+      // up to €70; formatPrice renders whole euros without decimals.
+      price: s.price_cents === null || s.price_cents === 0 ? null : s.price_cents / 100,
       description: s.description ?? '',
       popular: Boolean(s.is_popular),
       // A CTA renders only when both a destination and a label are present;
       // otherwise the card keeps the default static "Enquire →".
       cta: s.cta_url && s.cta_label ? { label: s.cta_label, href: s.cta_url } : null,
-      price_suffix: s.price_suffix ?? null
+      price_suffix: s.price_suffix ?? null,
+      price_note: s.price_note ?? null
     });
   }
   return groups;

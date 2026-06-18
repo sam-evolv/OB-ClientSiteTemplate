@@ -167,7 +167,11 @@ export const ServiceRowSchema = z.object({
   // price_suffix is a small qualifier shown next to the price (e.g. "/ mo").
   cta_label: z.string().nullable().optional(),
   cta_url: z.string().nullable().optional(),
-  price_suffix: z.string().nullable().optional()
+  price_suffix: z.string().nullable().optional(),
+
+  // Optional secondary price line under the price (e.g. "Students €193"). Null
+  // renders nothing, so this is backward-compatible for every existing tenant.
+  price_note: z.string().nullable().optional()
 });
 export type ServiceRow = z.infer<typeof ServiceRowSchema>;
 

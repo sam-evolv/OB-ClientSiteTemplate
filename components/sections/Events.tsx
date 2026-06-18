@@ -88,23 +88,39 @@ function ServiceCard({ service, accent }: { service: ServiceVM; accent: string }
           borderTop: `1px solid ${popular ? `${accent}30` : 'rgba(255,255,255,0.08)'}`
         }}
       >
-        <div
-          className="service-price"
-          style={{
-            fontFamily: FONT_SERIF,
-            fontWeight: 400,
-            fontSize: service.price === null ? 18 : 30,
-            color: accent,
-            letterSpacing: '-0.02em',
-            lineHeight: 1,
-            fontVariantNumeric: 'tabular-nums lining-nums',
-            transition: 'transform 400ms cubic-bezier(0.16, 1, 0.3, 1)',
-            transformOrigin: 'left center'
-          }}
-        >
-          {formatPrice(service.price)}
-          {service.price_suffix ? (
-            <span style={{ fontSize: 13, opacity: 0.6, fontWeight: 400 }}> {service.price_suffix}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+          <div
+            className="service-price"
+            style={{
+              fontFamily: FONT_SERIF,
+              fontWeight: 400,
+              fontSize: service.price === null ? 18 : 30,
+              color: accent,
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              fontVariantNumeric: 'tabular-nums lining-nums',
+              transition: 'transform 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+              transformOrigin: 'left center'
+            }}
+          >
+            {formatPrice(service.price)}
+            {service.price_suffix ? (
+              <span style={{ fontSize: 13, opacity: 0.6, fontWeight: 400 }}> {service.price_suffix}</span>
+            ) : null}
+          </div>
+          {service.price_note ? (
+            <div
+              style={{
+                fontFamily: FONT_SANS,
+                fontSize: 12.5,
+                fontWeight: 500,
+                color: accent,
+                opacity: 0.92,
+                letterSpacing: '0.005em'
+              }}
+            >
+              {service.price_note}
+            </div>
           ) : null}
         </div>
         {service.cta ? (
