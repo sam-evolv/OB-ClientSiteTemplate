@@ -144,6 +144,10 @@ export type BusinessVM = {
   press_mentions: PressMentionVM[];
   testimonials: TestimonialVM[];
   sections: SectionLink[];
+  /** Optional per-tenant Privacy Policy URL — null/absent hides the footer link. */
+  privacy_url?: string | null;
+  /** Optional per-tenant Terms of Service URL — null/absent hides the footer link. */
+  terms_url?: string | null;
 };
 
 /**
@@ -380,6 +384,8 @@ export function toBusinessViewModel(
     service_groups: toServiceGroups(data.services),
     press_mentions: asArray<PressMentionVM>(b.press_mentions),
     testimonials: asArray<TestimonialVM>(b.testimonials),
-    sections: DEFAULT_SECTIONS
+    sections: DEFAULT_SECTIONS,
+    privacy_url: b.privacy_url ?? null,
+    terms_url: b.terms_url ?? null
   };
 }

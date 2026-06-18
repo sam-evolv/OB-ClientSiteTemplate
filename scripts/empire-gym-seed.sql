@@ -5,8 +5,9 @@
 -- (nrntaowmmemhjfxjqjch). It is the source-of-truth record of the row's contents
 -- and a runnable replay/revert artifact, kept faithful to live production.
 --
--- Requires migration 20260618120000_services_cta_columns.sql (adds the nullable
--- services.cta_label / cta_url / price_suffix columns referenced below).
+-- Requires migrations:
+--   * 20260618120000_services_cta_columns.sql       (cta_label / cta_url / price_suffix)
+--   * 20260618153000_businesses_privacy_terms_urls.sql (privacy_url / terms_url)
 --
 -- Reuse decisions:
 --   * primary_colour: 'crimson' (existing named-colour token, closest to the
@@ -52,7 +53,8 @@ INSERT INTO public.businesses (
   travel_zones, venue_requirements,
   website_stats, trust_signals, press_mentions, testimonials,
   plan, is_live, website_is_published,
-  booking_mode, payment_acceptance
+  booking_mode, payment_acceptance,
+  privacy_url, terms_url
 ) VALUES (
   '2ec3b899-e539-4a07-93f3-16682ad2ef86',
   'd5835ed3-6f8a-4251-a41f-4cfae5300cc4',
@@ -75,7 +77,7 @@ INSERT INTO public.businesses (
   ]::text[],
   'Unit 3, Matthew Hill',
   'T12 CR22',
-  NULL,
+  'empiregymcork@outlook.com',
   NULL,
   '@empiregym.cork',
   'https://www.instagram.com/empiregym.cork/',
@@ -106,7 +108,9 @@ INSERT INTO public.businesses (
   true,
   true,
   'enquiry',
-  'card'
+  'card',
+  '/empire-gym/privacy.html',
+  '/empire-gym/terms.html'
 )
 ON CONFLICT (id) DO UPDATE SET
   owner_id                 = EXCLUDED.owner_id,
@@ -157,6 +161,8 @@ ON CONFLICT (id) DO UPDATE SET
   website_is_published     = EXCLUDED.website_is_published,
   booking_mode             = EXCLUDED.booking_mode,
   payment_acceptance       = EXCLUDED.payment_acceptance,
+  privacy_url              = EXCLUDED.privacy_url,
+  terms_url                = EXCLUDED.terms_url,
   updated_at               = now();
 
 -- ── services (3 tabbed groups; price_cents=0 = "On enquiry" per template) ──
@@ -167,22 +173,22 @@ INSERT INTO public.services
   (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix)
 VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Monthly',  'Full gym access, cancel any time. The simplest way in.',
-    30, 'Rolling · no contract', 0, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
+    30, 'Rolling · no contract', 6999, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
     'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', '/ mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '3 months', 'Three months of full access, paid up front.',
-    90, 'Up-front', 0, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    90, 'Up-front', 19300, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
     'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire — better value for the committed.',
-    180, 'Up-front', 0, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    180, 'Up-front', 35700, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
     'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '12 months', 'A full year on the floor — our best rate.',
-    365, 'Best value', 0, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
+    365, 'Best value', 62900, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
     'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Student',  'Discounted full access for students — bring your ID.',
-    30, 'Rolling', 0, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    30, 'Rolling', 5999, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
     'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', '/ mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Day pass', 'Just passing through? A full day on the floor.',
-    1, '1 day', 0, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    1, '1 day', 1500, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
     'Get a day pass', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Online Coaching', 'Fully tailored training, nutrition and check-ins. After checkout you''ll complete a short onboarding form and get your coaching packs.',
@@ -227,13 +233,13 @@ INSERT INTO public.business_media (business_id, kind, media_type, url, video_url
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
     NULL, 'The glowing EMPIRE emblem on the gym wall', 'welcome to the Empire', NULL, 2);
 
--- ── business_hours (Mon–Fri 06:00–22:00, Sat–Sun 08:00–20:00) ──────────────
+-- ── business_hours (Mon–Fri 05:00–23:00, Sat–Sun 08:00–20:00) ──────────────
 -- day_of_week follows the Postgres/JS convention: 0 = Sunday … 6 = Saturday.
 INSERT INTO public.business_hours (business_id, day_of_week, is_open, is_closed, open_time, close_time) VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 0, true, false, '08:00:00', '20:00:00'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 1, true, false, '06:00:00', '22:00:00'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 2, true, false, '06:00:00', '22:00:00'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 3, true, false, '06:00:00', '22:00:00'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 4, true, false, '06:00:00', '22:00:00'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 5, true, false, '06:00:00', '22:00:00'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 1, true, false, '05:00:00', '23:00:00'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 2, true, false, '05:00:00', '23:00:00'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 3, true, false, '05:00:00', '23:00:00'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 4, true, false, '05:00:00', '23:00:00'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 5, true, false, '05:00:00', '23:00:00'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 6, true, false, '08:00:00', '20:00:00');

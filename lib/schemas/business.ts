@@ -85,7 +85,12 @@ export const BusinessRowSchema = z.object({
 
   // Per-tenant Google Search Console verification token (raw meta content
   // value). Nullable/optional like the other website_ marketing columns.
-  website_gsc_verification: z.string().nullable().optional()
+  website_gsc_verification: z.string().nullable().optional(),
+
+  // Per-tenant Privacy Policy + Terms of Service URLs surfaced in the marketing
+  // footer (GDPR + Stripe/EU Consumer Rights Directive). NULL hides the link.
+  privacy_url: z.string().nullable().optional(),
+  terms_url: z.string().nullable().optional()
 });
 
 export type BusinessRow = z.infer<typeof BusinessRowSchema>;

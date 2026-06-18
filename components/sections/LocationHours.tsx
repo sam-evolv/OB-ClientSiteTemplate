@@ -29,13 +29,16 @@ export function LocationHours({ b, accent }: { b: BusinessVM; accent: string }) 
     directionsQuery
   )}`;
 
-  // Optional, key-gated map embed. No key configured => directions link only.
+  // Map embed: prefer the official key-gated Maps Embed API when configured;
+  // otherwise fall back to the keyless google.com/maps iframe so every
+  // fixed-location tenant gets a visible map at no extra cost. The directions
+  // link above stays the canonical "open in Google Maps" affordance either way.
   const mapsEmbedKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
   const mapsEmbedSrc = mapsEmbedKey
     ? `https://www.google.com/maps/embed/v1/place?key=${mapsEmbedKey}&q=${encodeURIComponent(
         directionsQuery
       )}`
-    : null;
+    : `https://maps.google.com/maps?q=${encodeURIComponent(directionsQuery)}&output=embed`;
 
   const showHours = b.hours.length > 0;
 
