@@ -8,8 +8,12 @@ export const metadata: Metadata = {
   title: 'OpenBook Client Site Template',
   description: 'Premium data-driven websites for bookable local service businesses.',
   icons: {
-    icon: '/empiregym-favicon.ico',
-    apple: '/empiregym-apple-touch-icon.png'
+    icon: [
+      { url: '/favicon-empiregym-v2.ico', type: 'image/x-icon' },
+      { url: '/empiregym-icon-v2.png', type: 'image/png', sizes: '64x64' }
+    ],
+    apple: '/empiregym-apple-touch-icon-v2.png',
+    shortcut: '/favicon-empiregym-v2.ico'
   }
 };
 
