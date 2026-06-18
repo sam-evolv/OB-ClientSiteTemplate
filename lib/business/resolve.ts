@@ -351,6 +351,15 @@ export function buildMetadata(
   const description = b.hero_subhead || b.tagline || undefined;
   const ogImage = absoluteMediaUrl(b.hero_image?.url, origin);
 
+  // Per-tenant favicon: a business's own logo IS its favicon. Resolving it from
+  // the resolved view-model (rather than a shared, hardcoded list in the root
+  // layout) means each tenant site shows its own brand and there is never any
+  // crossover between tenants — SIMply Golf serves the SIMply Golf logo, Empire
+  // Gym serves the Empire Gym logo, and any future tenant gets its own with no
+  // template change. A relative path (e.g. "/media/logo.png") stays relative so
+  // it resolves on the tenant's own host; an absolute asset URL is used as-is.
+  const iconUrl = b.logo || undefined;
+
   // Per-tenant Google Search Console verification: only the matched tenant's own
   // custom-domain site emits its token (never the demo fallback or unmapped
   // hosts). Emits nothing when the column is null/empty.
@@ -360,6 +369,9 @@ export function buildMetadata(
     title,
     description,
     ...(canonical ? { alternates: { canonical } } : {}),
+    ...(iconUrl
+      ? { icons: { icon: [{ url: iconUrl }], shortcut: iconUrl, apple: [{ url: iconUrl }] } }
+      : {}),
     robots: {
       index: indexable,
       follow: true,
