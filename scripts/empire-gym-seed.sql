@@ -172,16 +172,23 @@ ON CONFLICT (id) DO UPDATE SET
 -- ("/ mo"); price_note renders a secondary line under it (the student rate).
 -- Membership: regular full prices headline; the student rate is shown per card
 -- via price_note (Monthly €69.99/€59.99, 3mo €209.97/€193, 6mo €419.94/€357,
--- annual €839.88/€629). All membership tiers share one Stripe link for now.
+-- annual €839.88/€629). 6mo/12mo/Day pass share one generic Stripe link.
+-- NOTE: Monthly + 3-month are currently on a TEMPORARY early-bird promo (€55 /
+-- €149) with their own dedicated Stripe links — see the REVERT TO comments on
+-- those two rows to flip them back to normal/student pricing when it ends.
 INSERT INTO public.services
   (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix, price_note)
 VALUES
+  -- EARLY-BIRD PROMO (temporary). REVERT TO: 6999, 'Rolling · no contract',
+  --   cta_url '…0sU00', price_note 'Students €59.99 / mo'.
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Monthly',  'Full gym access, cancel any time. The simplest way in.',
-    30, 'Rolling · no contract', 6999, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', true,
-    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', '/ mo', 'Students €59.99 / mo'),
+    30, 'Early bird · limited time', 5500, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', true,
+    'Join now', 'https://buy.stripe.com/6oU8wP3KjbBbbsX40s0sU02', '/ mo', 'Normally €69.99 / mo'),
+  -- EARLY-BIRD PROMO (temporary). REVERT TO: 20997, 'Up-front',
+  --   cta_url '…0sU00', price_note 'Students €193'.
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '3 months', 'Three months of full access, paid up front.',
-    90, 'Up-front', 20997, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', false,
-    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL, 'Students €193'),
+    90, 'Early bird · limited time', 14900, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', false,
+    'Join now', 'https://buy.stripe.com/14AfZh2GfgVv9kPcwY0sU01', NULL, 'Normally €209.97'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire — better value for the committed.',
     180, 'Up-front', 41994, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', false,
     'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL, 'Students €357'),
