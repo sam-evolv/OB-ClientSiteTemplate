@@ -19,8 +19,13 @@ export function Gallery({ b, accent }: { b: BusinessVM; accent: string }) {
   const [lbIdx, setLbIdx] = useState<number | null>(null);
 
   const layout = [
-    { col: 'span 7', aspect: '16/11' }, // 0 — feature image
-    { col: 'span 5', aspect: '9/16' }, // 1 — portrait video
+    // Feature tile + the narrow portrait slot both bias their crop toward the
+    // top of the source image. Portrait subjects (people standing) that land in
+    // either container keep their heads in frame instead of getting clipped by
+    // a centre crop. The 4/5 tiles are close enough to portrait that a centre
+    // crop is fine.
+    { col: 'span 7', aspect: '16/11', objectPosition: '50% 22%' }, // 0 — feature image
+    { col: 'span 5', aspect: '9/16', objectPosition: '50% 30%' }, // 1 — portrait video
     { col: 'span 4', aspect: '4/5' }, // 2
     { col: 'span 4', aspect: '4/5' }, // 3 — portrait video
     { col: 'span 4', aspect: '4/5' } // 4
@@ -102,6 +107,7 @@ export function Gallery({ b, accent }: { b: BusinessVM; accent: string }) {
                     accent={accent}
                     aspect={g.aspect}
                     style={itemStyle}
+                    objectPosition={g.objectPosition}
                   />
                 )}
               </div>

@@ -70,8 +70,8 @@ INSERT INTO public.businesses (
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png',
   ARRAY[
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12.jpeg',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%282%29.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12.jpeg',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%283%29.jpeg',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%284%29.jpeg',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.06.11.jpeg',
@@ -269,8 +269,11 @@ INSERT INTO public.business_media (business_id, kind, media_type, url, video_url
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
     NULL, 'Empire Gym coaching, competitor and coach',
     'Coaching that takes you all the way, stage included.', NULL, 0),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 0),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%282%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 1),
+  -- Slot 0 (the 16/11 feature tile) holds a landscape interior shot so the
+  -- centre crop doesn't clip people. Slot 1 (9/16 portrait) holds the coaches
+  -- studio photo, where its portrait orientation fits naturally.
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%282%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 0),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 1),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%283%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 2),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%284%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 3),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.06.11.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 4),

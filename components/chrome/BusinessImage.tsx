@@ -31,7 +31,8 @@ export function BusinessImage({
   accent,
   aspect = '4/3',
   style = {},
-  sizes = '(max-width: 800px) 100vw, 50vw'
+  sizes = '(max-width: 800px) 100vw, 50vw',
+  objectPosition = '50% 50%'
 }: {
   image?: { url?: string; alt?: string; caption?: string } | null;
   fallbackLabel?: string;
@@ -39,6 +40,10 @@ export function BusinessImage({
   aspect?: string;
   style?: CSSProperties;
   sizes?: string;
+  /** CSS object-position for the underlying <img>. Default centre. Useful when a
+   *  portrait subject lands in a landscape tile and the default centre crop
+   *  would clip heads — e.g. '50% 25%' biases the visible area toward the top. */
+  objectPosition?: string;
 }) {
   const [hover, setHover] = useState(false);
 
@@ -64,6 +69,7 @@ export function BusinessImage({
           sizes={sizes}
           style={{
             objectFit: 'cover',
+            objectPosition,
             filter: 'contrast(1.05) saturate(0.95)',
             transform: hover ? 'scale(1.03)' : 'scale(1)',
             transition: 'transform 600ms cubic-bezier(0.16, 1, 0.3, 1)'
