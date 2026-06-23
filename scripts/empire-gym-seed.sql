@@ -6,9 +6,11 @@
 -- and a runnable replay/revert artifact, kept faithful to live production.
 --
 -- Requires migrations:
---   * 20260618120000_services_cta_columns.sql       (cta_label / cta_url / price_suffix)
+--   * 20260618120000_services_cta_columns.sql          (cta_label / cta_url / price_suffix)
 --   * 20260618153000_businesses_privacy_terms_urls.sql (privacy_url / terms_url)
---   * 20260618170000_services_price_note.sql        (price_note — student rate line)
+--   * 20260618170000_services_price_note.sql           (price_note, secondary price line)
+--   * 20260623180000_businesses_faq.sql                (faq jsonb, FAQ section)
+--   (amenities is a pre-existing businesses column; "What's included" renders it.)
 --
 -- Reuse decisions:
 --   * primary_colour: 'crimson' (existing named-colour token, closest to the
@@ -16,19 +18,15 @@
 --   * website_hero_variant: 'photo' (existing variant; the design uses a hero
 --     image + autoplay video, which is exactly what 'photo' supports).
 --   * service_groups: rendered via the existing tabbed Events section by
---     setting group_name + group_blurb + sort_order — three tabs:
+--     setting group_name + group_blurb + sort_order, three tabs:
 --     Gym membership / Train with Stephen / Train with Dayana.
---   * location: rendered via the existing LocationHours section (fixed address).
---   * No template code changes required.
+--   * location: rendered via the existing LocationHours section (fixed address + map).
+--   * amenities -> "What's included" section; faq -> FAQ section (both field-gated).
 --
--- Assets: every URL on this row points at the `business-assets` storage bucket
--- under the business id prefix
---   2ec3b899-e539-4a07-93f3-16682ad2ef86/
---     logo.png
---     interior.png
---     coaches.png
---     hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png   (hero still)
---     hf_20260616_161710_a24bf8a8-eaee-4b49-bb5f-124790b812f9.mp4   (hero video)
+-- Assets: every URL points at the `business-assets` storage bucket under the
+-- business id prefix 2ec3b899-e539-4a07-93f3-16682ad2ef86/. logo.png (logo),
+-- the hf_2026… still+mp4 (hero emblem + video), coaches.png (about portrait),
+-- and the eight uploaded facility photos (WhatsApp Image …jpeg) for the gallery.
 --
 -- Idempotent by design: the businesses row UPSERTs on id, and the three child
 -- tables are wiped for this business_id then re-inserted, so re-running this
@@ -55,7 +53,7 @@ INSERT INTO public.businesses (
   website_stats, trust_signals, press_mentions, testimonials,
   plan, is_live, website_is_published,
   booking_mode, payment_acceptance,
-  privacy_url, terms_url
+  privacy_url, terms_url, amenities, faq
 ) VALUES (
   '2ec3b899-e539-4a07-93f3-16682ad2ef86',
   'd5835ed3-6f8a-4251-a41f-4cfae5300cc4',
@@ -72,9 +70,14 @@ INSERT INTO public.businesses (
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png',
   ARRAY[
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/interior.png',
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png'
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%282%29.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%283%29.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%284%29.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.06.11.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.06.11%20%281%29.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.07.37.jpeg',
+    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.09.52.jpeg'
   ]::text[],
   'Unit 3, Matthew Hill',
   'T12 CR22',
@@ -87,17 +90,33 @@ INSERT INTO public.businesses (
   'https://www.empiregym.ie',
   'Build your',
   'inner empire.',
-  'A new kind of gym in Cork — serious iron, zero ego. Strength, discipline and respect, built rep by rep, for every body and every level. Walk in however you are. Walk out stronger.',
+  'A new kind of gym in Cork. Serious iron, zero ego. Strength, discipline and respect, built rep by rep, for every body and every level. Walk in however you are. Walk out stronger.',
   'photo',
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
   'A gym for all. Built to last.',
-  'Empire Gym opened its doors in Cork with one belief: real strength is for everyone. Kitted out with proper plate-loaded machines, racks, free weights and the space to actually train, it''s a gym built for results — but it''s the atmosphere that sets it apart. Whether you''re chasing a stage, a PB, or just a healthier, stronger you, you''ll find a welcome and a community that has your back. Strength, discipline and respect aren''t just words on the wall here — they''re how the place runs.',
-  'Empire Gym opened its doors in Cork with one belief: real strength is for everyone. Kitted out with proper plate-loaded machines, racks, free weights and the space to actually train, it''s a gym built for results — but it''s the atmosphere that sets it apart. Whether you''re chasing a stage, a PB, or just a healthier, stronger you, you''ll find a welcome and a community that has your back. Strength, discipline and respect aren''t just words on the wall here — they''re how the place runs.',
-  'The Empire team',
-  'Coaching · Matthew Hill, Cork',
+  $about$Empire Gym was created to raise the standard of fitness in Ireland by combining innovation, science, and a passion for sport.
+
+Our mission goes beyond training. We aim to provide a transformative experience where quality of life, well-being, and performance come together.
+
+Empire Gym's greatest strength is the fusion of world-class bodybuilding and functional training practices with a commitment to excellence. This unique combination of cultures and methodologies creates exclusive training programs designed for individuals who seek high performance, continuous improvement, and measurable results.
+
+Here, you will find a distinctive, fully equipped, and accessible environment featuring expert coaching and a motivating atmosphere that inspires discipline and personal growth every day.
+
+Empire Gym is more than just another fitness center. It is a hub of innovation in the fitness industry, ready to transform the way people who are committed to achieving results train, live, and reach their goals.$about$,
+  $about$Empire Gym was created to raise the standard of fitness in Ireland by combining innovation, science, and a passion for sport.
+
+Our mission goes beyond training. We aim to provide a transformative experience where quality of life, well-being, and performance come together.
+
+Empire Gym's greatest strength is the fusion of world-class bodybuilding and functional training practices with a commitment to excellence. This unique combination of cultures and methodologies creates exclusive training programs designed for individuals who seek high performance, continuous improvement, and measurable results.
+
+Here, you will find a distinctive, fully equipped, and accessible environment featuring expert coaching and a motivating atmosphere that inspires discipline and personal growth every day.
+
+Empire Gym is more than just another fitness center. It is a hub of innovation in the fitness industry, ready to transform the way people who are committed to achieving results train, live, and reach their goals.$about$,
+  'Stephen & Dayana',
+  'Coaches · Matthew Hill, Cork',
   NULL,
   'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
-  'Everyone''s welcome here — first session or thousandth, lifting heavy or just starting out. No ego, no judgement, just strength, discipline and respect, built one honest session at a time. This is where you build your inner empire.',
+  'Everyone''s welcome here, first session or thousandth, lifting heavy or just starting out. No ego, no judgement, just strength, discipline and respect, built one honest session at a time. This is where you build your inner empire.',
   'strength, discipline and respect',
   NULL,
   NULL,
@@ -111,7 +130,19 @@ INSERT INTO public.businesses (
   'enquiry',
   'card',
   '/empire-gym/privacy.html',
-  '/empire-gym/terms.html'
+  '/empire-gym/terms.html',
+  ARRAY['Full training room & free weights','Sauna','Ice bath (coming soon)','Kitchen with fridge & microwave','Free on-site parking','Coaching on the floor'],
+  $faq$[
+    {"q":"What is included in my membership?","a":"Full access to the training room and free weights, the sauna, an ice bath (coming soon), our kitchen with fridge and microwave, free on-site parking, and coaching on the floor."},
+    {"q":"What are your opening hours?","a":"Monday to Friday, 5am to 11pm. Saturday and Sunday, 8am to 8pm."},
+    {"q":"Do you offer a student discount?","a":"Yes. Student membership is €49.99 per month, rolling monthly, with full access to all facilities. Just bring a valid student ID."},
+    {"q":"What are the early-bird prices?","a":"Our first 50 members get discounted early-bird rates on every plan. Once the first 50 are gone, prices return to the standard rates shown as Normally on each card."},
+    {"q":"Can I cancel any time?","a":"Monthly and student memberships are rolling: cancel any time and they stop at the end of your current month. Multi-month plans are paid up front for the term. Full details are in our Terms of Service."},
+    {"q":"Can I freeze or pause my membership?","a":"Yes. If you are travelling or injured, get in touch and we can freeze your membership for an agreed period. For injuries we may ask for medical confirmation. See our Terms of Service for details."},
+    {"q":"Do I need experience to join?","a":"Not at all. Empire is for every level. If you are just starting out, ask a coach and they will show you the ropes."},
+    {"q":"Where are you, and is there parking?","a":"Empire Gym, Unit 3, Matthew Hill, Cork, T12 CR22. There is free parking on site."},
+    {"q":"Health and safety","a":"Always train within your limits and speak to a doctor before starting a new programme, especially if you have a medical condition or injury. You train at your own risk, and coaching guidance is not medical advice."}
+  ]$faq$::jsonb
 )
 ON CONFLICT (id) DO UPDATE SET
   owner_id                 = EXCLUDED.owner_id,
@@ -164,49 +195,56 @@ ON CONFLICT (id) DO UPDATE SET
   payment_acceptance       = EXCLUDED.payment_acceptance,
   privacy_url              = EXCLUDED.privacy_url,
   terms_url                = EXCLUDED.terms_url,
+  amenities                = EXCLUDED.amenities,
+  faq                      = EXCLUDED.faq,
   updated_at               = now();
 
--- ── services (3 tabbed groups; price_cents=0 = "On enquiry" per template) ──
+-- ── services (3 tabbed groups) ─────────────────────────────────────────────
 -- cta_label / cta_url make each card a real button (Stripe checkout, WhatsApp,
--- the onboarding page, or Instagram). price_suffix renders next to the price
--- ("/ mo"); price_note renders a secondary line under it (the student rate).
--- Membership: regular full prices headline; the student rate is shown per card
--- via price_note (Monthly €69.99/€59.99, 3mo €209.97/€193, 6mo €419.94/€357,
--- annual €839.88/€629). 6mo/12mo/Day pass share one generic Stripe link.
--- NOTE: Monthly + 3-month are currently on a TEMPORARY early-bird promo (€55 /
--- €149) with their own dedicated Stripe links — see the REVERT TO comments on
--- those two rows to flip them back to normal/student pricing when it ends.
+-- onboarding page, Instagram). price_suffix renders next to the price ("/ mo");
+-- price_note renders a secondary line under it.
+--
+-- EARLY-BIRD PROMO (first 50 members): Monthly, 3-month, 6-month, 12-month and
+-- Student are on dedicated early-bird Stripe links at the discounted prices
+-- below, with a "Normally €…" note showing the full price. To END the promo,
+-- per row set price_cents to its full value, restore the standard duration_label
+-- and drop the "Normally" note:
+--   Monthly  5500 -> 6999  ('Rolling · no contract')
+--   3 months 14900 -> 20997 ('Up-front')
+--   6 months 28050 -> 41994 ('Up-front')
+--   12 months 49500 -> 83988 ('Best value')
+--   Student  4999 -> 5999  ('Rolling · no contract')
+-- Day pass (€15) is not part of the promo and uses the generic membership link.
 INSERT INTO public.services
   (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix, price_note)
 VALUES
-  -- EARLY-BIRD PROMO (temporary). REVERT TO: 6999, 'Rolling · no contract',
-  --   cta_url '…0sU00', price_note 'Students €59.99 / mo'.
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Monthly',  'Full gym access, cancel any time. The simplest way in.',
-    30, 'Early bird · limited time', 5500, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', true,
+    30, 'Early bird · limited time', 5500, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', true,
     'Join now', 'https://buy.stripe.com/6oU8wP3KjbBbbsX40s0sU02', '/ mo', 'Normally €69.99 / mo'),
-  -- EARLY-BIRD PROMO (temporary). REVERT TO: 20997, 'Up-front',
-  --   cta_url '…0sU00', price_note 'Students €193'.
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '3 months', 'Three months of full access, paid up front.',
-    90, 'Early bird · limited time', 14900, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', false,
+    90, 'Early bird · limited time', 14900, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', false,
     'Join now', 'https://buy.stripe.com/14AfZh2GfgVv9kPcwY0sU01', NULL, 'Normally €209.97'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire — better value for the committed.',
-    180, 'Up-front', 41994, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', false,
-    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL, 'Students €357'),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '12 months', 'A full year on the floor — our best rate.',
-    365, 'Best value', 83988, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', true,
-    'Join now', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL, 'Students €629'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire, better value for the committed.',
+    180, 'Early bird · limited time', 28050, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', false,
+    'Join now', 'https://buy.stripe.com/6oU6oHgx5eNnfJd0Og0sU05', NULL, 'Normally €419.94'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '12 months', 'A full year on the floor, our best rate.',
+    365, 'Early bird · limited time', 49500, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', true,
+    'Join now', 'https://buy.stripe.com/fZu8wPft1cFf1SnbsU0sU06', NULL, 'Normally €839.88'),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Student', 'Student discount price with full access to all facilities. Valid student ID required.',
+    30, 'Early bird · rolling monthly', 4999, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', false,
+    'Join now', 'https://buy.stripe.com/5kQfZh80zbBb7cH8gI0sU04', '/ mo', 'Normally €59.99 / mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Day pass', 'Just passing through? A full day on the floor.',
-    1, '1 day', 1500, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community — student rates on every plan.', false,
+    1, '1 day', 1500, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', false,
     'Get a day pass', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL, NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Online Coaching', 'Fully tailored training, nutrition and check-ins. After checkout you''ll complete a short onboarding form and get your coaching packs.',
-    30, 'Monthly · SS Coaching', 0, true,  7, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', true,
+    30, 'Monthly · SS Coaching', 0, true,  7, 'Train with Stephen', 'SS Coaching, online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', true,
     'Start coaching', 'https://buy.stripe.com/14A7sL82N7Tr9Mb75r8IU0u', '/ mo', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'In-person PT', 'One-to-one sessions with Stephen on the Empire floor. Enquire for block rates.',
-    60, 'Per session / block', 0, true,  8, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false,
+    60, 'Per session / block', 0, true,  8, 'Train with Stephen', 'SS Coaching, online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false,
     'Enquire on WhatsApp', 'https://wa.me/353879943270', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Already signed up?', 'Just purchased coaching? Complete your client onboarding form here and grab your info + start-up packs.',
-    15, 'New clients', 0, true,  9, 'Train with Stephen', 'SS Coaching — online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false,
+    15, 'New clients', 0, true,  9, 'Train with Stephen', 'SS Coaching, online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', false,
     'Complete onboarding', '/empire-gym/onboarding.html', NULL, NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Personal training', 'Tailored one-to-one coaching with Dayana, built around your goals and pace.',
@@ -216,9 +254,9 @@ VALUES
     30, 'Monthly', 0, true, 11, 'Train with Dayana', 'One-to-one and online coaching with Dayana. Get in touch to find the right plan for you.', false,
     'Enquire', 'https://www.instagram.com/empiregym.cork/', NULL, NULL);
 
--- ── business_media (logo / hero / about / gallery x 3) ─────────────────────
--- Every asset lives in the business-assets bucket under the business id prefix
--- — see scripts/empire-gym-assets.md for the canonical file list.
+-- ── business_media (logo / hero / about + 8 real gallery photos) ───────────
+-- The gallery uses the founder's uploaded facility photos (raw WhatsApp file
+-- names, URL-encoded). about = coaches.png; hero = the hf emblem still + video.
 INSERT INTO public.business_media (business_id, kind, media_type, url, video_url, alt, caption, label, sort_order) VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'logo',  'image',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png',
@@ -229,17 +267,16 @@ INSERT INTO public.business_media (business_id, kind, media_type, url, video_url
     'The glowing red EMPIRE emblem on the gym wall, weights racked in the dark', NULL, NULL, 0),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'about', 'image',
     'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
-    NULL, 'Empire Gym coaching — competitor and coach',
-    'Coaching that takes you all the way — stage included.', NULL, 0),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image',
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/interior.png',
-    NULL, 'The Empire Gym floor — racks, plates and mirrors', 'the floor', NULL, 0),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image',
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/coaches.png',
-    NULL, 'Empire coaching — competitor and coach', 'coaching to the stage', NULL, 1),
-  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image',
-    'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/hf_20260616_161623_97589bd6-7bad-48a9-b09f-6b2d75bd004f.png',
-    NULL, 'The glowing EMPIRE emblem on the gym wall', 'welcome to the Empire', NULL, 2);
+    NULL, 'Empire Gym coaching, competitor and coach',
+    'Coaching that takes you all the way, stage included.', NULL, 0),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 0),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%282%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 1),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%283%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 2),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.05.12%20%284%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 3),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.06.11.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 4),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.06.11%20%281%29.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 5),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.07.37.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 6),
+  ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'gallery', 'image', 'https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/WhatsApp%20Image%202026-06-22%20at%2018.09.52.jpeg', NULL, 'Empire Gym, Matthew Hill, Cork', NULL, NULL, 7);
 
 -- ── business_hours (Mon–Fri 05:00–23:00, Sat–Sun 08:00–20:00) ──────────────
 -- day_of_week follows the Postgres/JS convention: 0 = Sunday … 6 = Saturday.

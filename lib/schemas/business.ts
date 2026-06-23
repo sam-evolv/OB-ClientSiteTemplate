@@ -90,7 +90,11 @@ export const BusinessRowSchema = z.object({
   // Per-tenant Privacy Policy + Terms of Service URLs surfaced in the marketing
   // footer (GDPR + Stripe/EU Consumer Rights Directive). NULL hides the link.
   privacy_url: z.string().nullable().optional(),
-  terms_url: z.string().nullable().optional()
+  terms_url: z.string().nullable().optional(),
+
+  // Per-tenant FAQ rendered as its own marketing section. JSON array of {q,a};
+  // NULL/empty hides the section. Refined to FaqItemSchema in the view-model.
+  faq: z.unknown().nullable().optional()
 });
 
 export type BusinessRow = z.infer<typeof BusinessRowSchema>;
@@ -119,6 +123,12 @@ export const TrustSignalSchema = z.object({
   label: z.string()
 });
 export type TrustSignal = z.infer<typeof TrustSignalSchema>;
+
+export const FaqItemSchema = z.object({
+  q: z.string(),
+  a: z.string()
+});
+export type FaqItem = z.infer<typeof FaqItemSchema>;
 
 export const VenueRequirementSchema = z.object({
   eyebrow: z.string(),

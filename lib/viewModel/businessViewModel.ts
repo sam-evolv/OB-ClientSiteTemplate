@@ -69,6 +69,7 @@ export type ServiceGroupVM = {
 };
 
 export type TrustSignalVM = { label: string };
+export type FaqVM = { q: string; a: string };
 export type PressMentionVM = { outlet: string; title: string; date: string };
 export type TestimonialVM = { quote: string; author: string; role: string; context: string };
 export type VenueRequirementVM = { stat: string; label: string };
@@ -150,6 +151,10 @@ export type BusinessVM = {
   privacy_url?: string | null;
   /** Optional per-tenant Terms of Service URL — null/absent hides the footer link. */
   terms_url?: string | null;
+  /** "What's included" perks. Empty/absent hides the Amenities section. */
+  amenities?: string[];
+  /** FAQ items. Empty/absent hides the FAQ section. */
+  faq?: FaqVM[];
 };
 
 /**
@@ -325,8 +330,10 @@ const DEFAULT_SECTIONS: SectionLink[] = [
   { id: 'mission', label: 'Mission' },
   { id: 'events', label: 'Events' },
   { id: 'coaching', label: 'Coaching' },
+  { id: 'included', label: 'Included' },
   { id: 'about', label: 'About' },
   { id: 'gallery', label: 'Inside the dome' },
+  { id: 'faq', label: 'FAQ' },
   { id: 'press', label: 'Press' },
   { id: 'contact', label: 'Contact' }
 ];
@@ -393,6 +400,10 @@ export function toBusinessViewModel(
     testimonials: asArray<TestimonialVM>(b.testimonials),
     sections: DEFAULT_SECTIONS,
     privacy_url: b.privacy_url ?? null,
-    terms_url: b.terms_url ?? null
+    terms_url: b.terms_url ?? null,
+    amenities: Array.isArray(b.amenities) ? b.amenities.filter((a): a is string => typeof a === 'string') : [],
+    faq: asArray<FaqVM>(b.faq).filter(
+      (f): f is FaqVM => Boolean(f) && typeof f.q === 'string' && typeof f.a === 'string'
+    )
   };
 }

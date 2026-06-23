@@ -62,18 +62,25 @@ export function About({ b, accent }: { b: BusinessVM; accent: string }) {
           >
             {b.about.headline}
           </h2>
-          <p
-            style={{
-              fontSize: 17,
-              lineHeight: 1.7,
-              opacity: 0.88,
-              letterSpacing: '-0.002em',
-              marginBottom: 20,
-              maxWidth: '60ch'
-            }}
-          >
-            {b.about.body}
-          </p>
+          {b.about.body
+            .split(/\n\s*\n/)
+            .map((para) => para.trim())
+            .filter(Boolean)
+            .map((para, i) => (
+              <p
+                key={i}
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.7,
+                  opacity: 0.88,
+                  letterSpacing: '-0.002em',
+                  marginBottom: 20,
+                  maxWidth: '60ch'
+                }}
+              >
+                {para}
+              </p>
+            ))}
           <div
             style={{
               display: 'flex',

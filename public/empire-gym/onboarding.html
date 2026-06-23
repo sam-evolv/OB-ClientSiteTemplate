@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0a0a0b" />
 <link rel="icon" type="image/png" href="https://nrntaowmmemhjfxjqjch.supabase.co/storage/v1/object/public/business-assets/2ec3b899-e539-4a07-93f3-16682ad2ef86/logo.png" />
-<title>SS Coaching — Client Onboarding · Empire Gym</title>
+<title>SS Coaching, Client Onboarding · Empire Gym</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
 <style>
   /* ─────────────────────────────────────────────────────────────────────────
-     DEV CONFIG — wire these when the site is built out properly.
+     DEV CONFIG, wire these when the site is built out properly.
      - COACH_WHATSAPP: Stephen's WhatsApp (intl, digits only). Live now.
      - SUBMIT_ENDPOINT: leave '' for now. Set to your API URL to ALSO email
        Stephen / save the submission to a DB. When set, the form POSTs the
@@ -113,10 +113,10 @@
 
   <p class="eyebrow">Client onboarding</p>
   <h1>Welcome to <em>SS Coaching.</em></h1>
-  <p class="lead">You're in. Fill this out in as much detail as you can — it's how Stephen builds your plan around <em>you</em>. It takes about 10 minutes. When you submit, it opens WhatsApp with your answers ready to send.</p>
+  <p class="lead">You're in. Fill this out in as much detail as you can, it's how Stephen builds your plan around <em>you</em>. It takes about 10 minutes. When you submit, it opens WhatsApp with your answers ready to send.</p>
 
   <div class="photos">
-    <h2>📸 Before you start — physique photos</h2>
+    <h2>📸 Before you start, physique photos</h2>
     <ul>
       <li>Attach current <b>front, back &amp; side</b> photos when you send your answers on WhatsApp.</li>
       <li>Use the <b>back camera</b>, showing your <b>full body</b> clearly.</li>
@@ -154,9 +154,9 @@
       <div class="grp">
         <label class="q">Metabolism speed</label>
         <div class="radios" role="radiogroup">
-          <label><input type="radio" name="metabolism" value="Fast (lean all year)" /> Fast — lean all year</label>
+          <label><input type="radio" name="metabolism" value="Fast (lean all year)" /> Fast, lean all year</label>
           <label><input type="radio" name="metabolism" value="Medium (in-between)" /> Medium</label>
-          <label><input type="radio" name="metabolism" value="Slow (hold body fat)" /> Slow — hold body fat</label>
+          <label><input type="radio" name="metabolism" value="Slow (hold body fat)" /> Slow, hold body fat</label>
         </div>
       </div>
       <div class="grp"><label class="q">Illnesses <span class="opt">(if any)</span></label><input type="text" name="illnesses" /></div>
@@ -181,9 +181,9 @@
             <label><input type="radio" name="period" value="No" /> No</label>
           </div>
         </div>
-        <div class="grp"><label class="q">If yes — first day of last bleed</label><input type="date" name="last_bleed" /></div>
+        <div class="grp"><label class="q">If yes, first day of last bleed</label><input type="date" name="last_bleed" /></div>
         <div class="grp">
-          <label class="q">If no — are you in:</label>
+          <label class="q">If no, are you in:</label>
           <div class="radios" role="radiogroup">
             <label><input type="radio" name="cycle_status" value="Pre-menopause" /> Pre-menopause</label>
             <label><input type="radio" name="cycle_status" value="Menopause" /> Menopause</label>
@@ -262,7 +262,7 @@
         <span class="fallback-label">No WhatsApp?</span>
         <button type="button" class="fb-btn" id="emailBtn">✉️ Email my answers instead</button>
         <button type="button" class="fb-btn" id="copyBtn">⧉ Copy my answers</button>
-        <span class="copied" id="copied">Copied — paste it to Stephen</span>
+        <span class="copied" id="copied">Copied, paste it to Stephen</span>
       </div>
       <p class="submit-note" style="margin-top:14px;">Either way, remember to send your <b>front, back &amp; side</b> photos to Stephen too.</p>
     </div>
@@ -271,7 +271,7 @@
 
 <script>
   // ── DEV CONFIG ────────────────────────────────────────────────────────────
-  const COACH_WHATSAPP = '353879943270';   // Stephen — live
+  const COACH_WHATSAPP = '353879943270';   // Stephen, live
   const COACH_EMAIL = '';                   // set Stephen's email for the mailto fallback
   const SUBMIT_ENDPOINT = '';               // set to your API URL to email/save too
   // ──────────────────────────────────────────────────────────────────────────
@@ -312,11 +312,11 @@
   ];
 
   function buildMessage(data){
-    let lines = ['*SS COACHING — NEW CLIENT ONBOARDING*', ''];
+    let lines = ['*SS COACHING, NEW CLIENT ONBOARDING*', ''];
     for (const [label, key] of FIELDS){
       if (key === null){ lines.push('', '*' + label.replace(/—/g,'').trim() + '*'); continue; }
       const v = (data[key] || '').toString().trim();
-      lines.push(label + ': ' + (v || '—'));
+      lines.push(label + ': ' + (v || '-'));
     }
     lines.push('', '📸 Photos (front / back / side) attached below 👇');
     return lines.join('\n');
@@ -341,10 +341,10 @@
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ coach:'Stephen Sharpe', product:'SS Coaching', submittedAt:new Date().toISOString(), answers:data })
         });
-      } catch(err){ /* non-blocking — WhatsApp hand-off still proceeds */ }
+      } catch(err){ /* non-blocking, WhatsApp hand-off still proceeds */ }
     }
 
-    // Persist for the welcome page (name greeting) — our own key only.
+    // Persist for the welcome page (name greeting), our own key only.
     try { localStorage.setItem('ss_onboard_name', data.full_name || ''); } catch(_){}
 
     // Hand off to WhatsApp with the full message pre-filled.
@@ -373,7 +373,7 @@
     if (!validateOrWarn()) return;
     const data = currentData();
     try { localStorage.setItem('ss_onboard_name', data.full_name || ''); } catch(_){}
-    const subject = encodeURIComponent('SS Coaching — Onboarding — ' + (data.full_name || 'New client'));
+    const subject = encodeURIComponent('SS Coaching, Onboarding, ' + (data.full_name || 'New client'));
     const body = encodeURIComponent(buildMessage(data) + '\n\n(Please attach your front, back & side photos to this email.)');
     const to = COACH_EMAIL || '';
     window.location.href = 'mailto:' + to + '?subject=' + subject + '&body=' + body;
