@@ -18,18 +18,16 @@ export function Gallery({ b, accent }: { b: BusinessVM; accent: string }) {
   const [ref, v] = useReveal();
   const [lbIdx, setLbIdx] = useState<number | null>(null);
 
-  const layout = [
-    // Feature tile + the narrow portrait slot both bias their crop toward the
-    // top of the source image. Portrait subjects (people standing) that land in
-    // either container keep their heads in frame instead of getting clipped by
-    // a centre crop. The 4/5 tiles are close enough to portrait that a centre
-    // crop is fine.
-    { col: 'span 7', aspect: '16/11', objectPosition: '50% 22%' }, // 0 — feature image
-    { col: 'span 5', aspect: '9/16', objectPosition: '50% 30%' }, // 1 — portrait video
-    { col: 'span 4', aspect: '4/5' }, // 2
-    { col: 'span 4', aspect: '4/5' }, // 3 — portrait video
-    { col: 'span 4', aspect: '4/5' } // 4
-  ];
+  // Layout cell per gallery index. The first two slots (feature 16/11 +
+  // narrow 9/16) bias their crop toward the top so a portrait subject keeps its
+  // head in frame; everything else is a 4/5 tile (centre crop is fine there).
+  // Driven per-index off the gallery length so ALL photos render as tiles, not
+  // just the first five — items 5+ flow into further three-up rows.
+  const cellFor = (i: number): { col: string; aspect: string; objectPosition?: string } => {
+    if (i === 0) return { col: 'span 7', aspect: '16/11', objectPosition: '50% 22%' };
+    if (i === 1) return { col: 'span 5', aspect: '9/16', objectPosition: '50% 30%' };
+    return { col: 'span 4', aspect: '4/5' };
+  };
 
   return (
     <section
@@ -75,15 +73,14 @@ export function Gallery({ b, accent }: { b: BusinessVM; accent: string }) {
         </h2>
 
         <div className="gallery-grid">
-          {layout.map((g, i) => {
-            const item = b.gallery[i];
-            if (!item) return null;
+          {b.gallery.map((item, i) => {
+            const g = cellFor(i);
             const wrapperStyle = { gridColumn: g.col, cursor: 'pointer' };
             const itemStyle = { borderRadius: 8 };
             return (
               <div
                 key={i}
-                className={`gallery-item gallery-item-${i}`}
+                className={`gallery-item gallery-item-${i}${i >= 5 ? ' gallery-item-rest' : ''}`}
                 style={{
                   ...wrapperStyle,
                   opacity: v ? 1 : 0,

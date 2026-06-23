@@ -151,7 +151,8 @@ a:focus-visible {
     grid-column: span 12 !important;
   }
   .gallery-item-2,
-  .gallery-item-3 {
+  .gallery-item-3,
+  .gallery-item-rest {
     grid-column: span 6 !important;
   }
 }
