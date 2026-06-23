@@ -214,7 +214,7 @@ ON CONFLICT (id) DO UPDATE SET
 --   6 months 28050 -> 41994 ('Up-front')
 --   12 months 49500 -> 83988 ('Best value')
 --   Student  4999 -> 5999  ('Rolling · no contract')
--- Day pass (€15) is not part of the promo and uses the generic membership link.
+-- Day pass (€15) is not part of the early-bird promo; it has its own Stripe link.
 INSERT INTO public.services
   (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix, price_note)
 VALUES
@@ -235,7 +235,7 @@ VALUES
     'Join now', 'https://buy.stripe.com/5kQfZh80zbBb7cH8gI0sU04', '/ mo', 'Normally €59.99 / mo'),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Day pass', 'Just passing through? A full day on the floor.',
     1, '1 day', 1500, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community. Early-bird rates for our first 50 members.', false,
-    'Get a day pass', 'https://buy.stripe.com/14A5kDbcL20B54z40s0sU00', NULL, NULL),
+    'Get a day pass', 'https://buy.stripe.com/fZu00jcgP5cNcx19kM0sU07', NULL, NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Online Coaching', 'Fully tailored training, nutrition and check-ins. After checkout you''ll complete a short onboarding form and get your coaching packs.',
     30, 'Monthly · SS Coaching', 0, true,  7, 'Train with Stephen', 'SS Coaching, online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', true,
