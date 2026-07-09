@@ -24,7 +24,17 @@ export function LocationHours({ b, accent }: { b: BusinessVM; accent: string }) 
   if (!b.location?.address) return null;
 
   const { address, address_line, city } = b.location;
-  const directionsQuery = [address, address_line, city].filter(Boolean).join(', ');
+  const displayAddress = [address, address_line, city].filter(Boolean).join(', ');
+
+  // Irish Eircodes pinpoint a single building and Google Maps resolves them
+  // directly (official Eircode integration). Free-text unit/estate addresses
+  // ("Unit 3, ...") often fail Google's keyless geocoder and leave the map
+  // empty or mis-pinned, so when any address field carries an Eircode, both
+  // the embed and the directions link query by Eircode alone. The full
+  // address stays as the visible text either way.
+  const EIRCODE_RE = /\b(?:[AC-FHKNPRTV-Y]\d{2}|D6W)\s?[0-9AC-FHKNPRTV-Y]{4}\b/i;
+  const eircode = displayAddress.match(EIRCODE_RE)?.[0];
+  const directionsQuery = eircode ? `${eircode}, Ireland` : displayAddress;
   const directionsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     directionsQuery
   )}`;
