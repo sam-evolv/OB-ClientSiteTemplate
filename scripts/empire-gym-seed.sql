@@ -136,7 +136,6 @@ Empire Gym is more than just another fitness center. It is a hub of innovation i
     {"q":"What is included in my membership?","a":"Full access to the training room and free weights, the sauna, an ice bath (coming soon), our kitchen with fridge and microwave, free on-site parking, and coaching on the floor."},
     {"q":"What are your opening hours?","a":"Monday to Friday, 5am to 11pm. Saturday and Sunday, 8am to 8pm."},
     {"q":"Do you offer a student discount?","a":"Yes. Student membership is €49.99 per month, rolling monthly, with full access to all facilities. Just bring a valid student ID."},
-    {"q":"What are the early-bird prices?","a":"Our first 50 members get discounted early-bird rates on every plan. Once the first 50 are gone, prices return to the standard rates shown as Normally on each card."},
     {"q":"Can I cancel any time?","a":"Monthly and student memberships are rolling: cancel any time and they stop at the end of your current month. Multi-month plans are paid up front for the term. Full details are in our Terms of Service."},
     {"q":"Can I freeze or pause my membership?","a":"Yes. If you are travelling or injured, get in touch and we can freeze your membership for an agreed period. For injuries we may ask for medical confirmation. See our Terms of Service for details."},
     {"q":"Do I need experience to join?","a":"Not at all. Empire is for every level. If you are just starting out, ask a coach and they will show you the ropes."},
@@ -204,35 +203,33 @@ ON CONFLICT (id) DO UPDATE SET
 -- onboarding page, Instagram). price_suffix renders next to the price ("/ mo");
 -- price_note renders a secondary line under it.
 --
--- EARLY-BIRD PROMO (first 50 members): Monthly, 3-month, 6-month, 12-month and
--- Student are on dedicated early-bird Stripe links at the discounted prices
--- below, with a "Normally €…" note showing the full price. To END the promo,
--- per row set price_cents to its full value, restore the standard duration_label
--- and drop the "Normally" note:
---   Monthly  5500 -> 6999  ('Rolling · no contract')
---   3 months 14900 -> 20997 ('Up-front')
---   6 months 28050 -> 41994 ('Up-front')
---   12 months 49500 -> 83988 ('Best value')
---   Student  4999 -> 5999  ('Rolling · no contract')
--- Day pass (€15) is not part of the early-bird promo; it has its own Stripe link.
+-- PRICING: the amounts below are Empire's live prices and are presented as the
+-- standard rates. The early-bird framing (an "EARLY BIRD · LIMITED TIME"
+-- duration_label, a "Normally €…" price_note and a "first 50 members" blurb and
+-- FAQ entry) was removed at the client's request, so every card now shows a
+-- plain duration and a single price. Each row keeps its own dedicated Stripe
+-- link, which charges the price_cents shown here.
+-- Reference only, the pre-discount list prices these replaced:
+--   Monthly €69.99, 3 months €209.97, 6 months €419.94, 12 months €839.88,
+--   Student €59.99. To raise prices, update price_cents AND the Stripe link.
 INSERT INTO public.services
   (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix, price_note)
 VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Monthly',  'Full gym access, cancel any time. The simplest way in.',
-    30, 'Early bird · limited time', 5500, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
-    'Join now', 'https://buy.stripe.com/6oU8wP3KjbBbbsX40s0sU02', '/ mo', 'Normally €69.99 / mo'),
+    30, 'Rolling monthly', 5500, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
+    'Join now', 'https://buy.stripe.com/6oU8wP3KjbBbbsX40s0sU02', '/ mo', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '3 months', 'Three months of full access, paid up front.',
-    90, 'Early bird · limited time', 14900, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Join now', 'https://buy.stripe.com/14AfZh2GfgVv9kPcwY0sU01', NULL, 'Normally €209.97'),
+    90, '3 months', 14900, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Join now', 'https://buy.stripe.com/14AfZh2GfgVv9kPcwY0sU01', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire, better value for the committed.',
-    180, 'Early bird · limited time', 28050, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Join now', 'https://buy.stripe.com/6oU6oHgx5eNnfJd0Og0sU05', NULL, 'Normally €419.94'),
+    180, '6 months', 28050, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Join now', 'https://buy.stripe.com/6oU6oHgx5eNnfJd0Og0sU05', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '12 months', 'A full year on the floor, our best rate.',
-    365, 'Early bird · limited time', 49500, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
-    'Join now', 'https://buy.stripe.com/fZu8wPft1cFf1SnbsU0sU06', NULL, 'Normally €839.88'),
+    365, '12 months', 49500, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
+    'Join now', 'https://buy.stripe.com/fZu8wPft1cFf1SnbsU0sU06', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Student', 'Student discount price with full access to all facilities. Valid student ID required.',
-    30, 'Early bird · rolling monthly', 4999, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Join now', 'https://buy.stripe.com/5kQfZh80zbBb7cH8gI0sU04', '/ mo', 'Normally €59.99 / mo'),
+    30, 'Rolling monthly', 4999, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
+    'Join now', 'https://buy.stripe.com/5kQfZh80zbBb7cH8gI0sU04', '/ mo', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Day pass', 'Just passing through? A full day on the floor.',
     1, '1 day', 1500, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
     'Get a day pass', 'https://buy.stripe.com/fZu00jcgP5cNcx19kM0sU07', NULL, NULL),
