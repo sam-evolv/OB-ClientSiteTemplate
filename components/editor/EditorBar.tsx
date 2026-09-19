@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { setPublishedAction } from '@/lib/editor/save-actions';
 import { signOutAction } from '@/lib/editor/auth-actions';
 import type { EditableSectionRef } from '@/lib/editor/sections';
@@ -79,6 +80,10 @@ export function EditorBar({
           View live site ↗
         </a>
       )}
+
+      <Link className="ed-pill" href="/dashboard/password">
+        Password
+      </Link>
 
       <form action={signOutAction}>
         <button className="ed-pill" type="submit">

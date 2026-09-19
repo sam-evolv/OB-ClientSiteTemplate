@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test lib/business/host.test.ts",
+    "test": "node --experimental-strip-types --test lib/business/host.test.ts lib/editor/password.test.ts",
     "seed:simply-golf": "node --env-file=.env.local --experimental-strip-types scripts/seed-simply-golf.ts"
   },
   "dependencies": {

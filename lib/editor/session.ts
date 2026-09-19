@@ -4,6 +4,8 @@ import { createEditorClient } from './supabase-server';
 export interface EditorOwner {
   id: string;
   email: string | null;
+  /** True while the account still carries the temporary password we issued. */
+  mustChangePassword: boolean;
 }
 
 export interface EditorBusiness {
@@ -27,7 +29,11 @@ export async function getEditorOwner(): Promise<EditorOwner | null> {
     data: { user },
   } = await sb.auth.getUser();
   if (!user) return null;
-  return { id: user.id, email: user.email ?? null };
+  return {
+    id: user.id,
+    email: user.email ?? null,
+    mustChangePassword: user.user_metadata?.must_change_password === true,
+  };
 }
 
 /**
@@ -71,7 +77,11 @@ export async function requireEditorSession() {
 
 /** Redirect to sign-in, then resolve the tenant this session may edit. */
 export async function requireEditableBusiness() {
-  await requireEditorSession();
+  const owner = await requireEditorSession();
+  // An account we issued a temporary password for has to replace it before it
+  // can reach the live site. Enforced here rather than in the page so every
+  // write path is covered, including the server actions.
+  if (owner.mustChangePassword) redirect('/dashboard/password');
   const result = await getEditableBusiness();
   if (!result) redirect('/dashboard/login?error=no_business');
   return result;
