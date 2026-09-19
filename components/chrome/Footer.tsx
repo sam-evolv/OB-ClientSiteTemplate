@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { StudioMark } from './StudioMark';
 import { FONT_SERIF, FONT_SANS, FONT_MONO } from '@/lib/ui/fonts';
 import type { CSSProperties } from 'react';
 import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
@@ -65,7 +64,30 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
         }}
       >
         <div className="footer-meta-left" style={{ justifySelf: 'start' }}>
-          <StudioMark size="md" />
+          <a
+            href="/dashboard"
+            className="studio-mark"
+            aria-label={`${b.name} — website admin sign in`}
+            style={{ display: 'inline-block', textDecoration: 'none', lineHeight: 0 }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 7,
+                padding: '6px 12px',
+                borderRadius: 999,
+                border: '1px solid rgba(255,255,255,0.14)',
+                fontFamily: FONT_MONO,
+                fontSize: 10,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.55)',
+              }}
+            >
+              Admin
+            </span>
+          </a>
         </div>
 
         <a
