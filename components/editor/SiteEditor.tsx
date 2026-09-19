@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { EditorBar } from './EditorBar';
 import { EditableMarketingPage } from './EditableMarketingPage';
 import { EditDrawer, type EditorContent } from './EditDrawer';
+import { editableSectionsFor } from '@/lib/editor/sections';
 import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
 
 /**
@@ -25,6 +26,17 @@ export function SiteEditor({
   published: boolean;
 }) {
   const [open, setOpen] = useState<{ id: string; label: string } | null>(null);
+  const sections = editableSectionsFor(b);
+
+  // Opening from the bar should also bring the section into view, so the owner
+  // can see what they are changing behind the panel.
+  const openSection = (id: string, label: string) => {
+    setOpen({ id, label });
+    if (typeof document !== 'undefined') {
+      const el = document.querySelector(`[data-ed-section="${id}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="ed-shell" style={{ '--ed-accent': b.primary_colour } as React.CSSProperties}>
@@ -33,9 +45,11 @@ export function SiteEditor({
         logoUrl={b.logo}
         published={published}
         liveUrl={liveUrl}
+        sections={sections}
+        onOpen={openSection}
       />
 
-      <EditableMarketingPage b={b} onEdit={(id, label) => setOpen({ id, label })} />
+      <EditableMarketingPage b={b} onEdit={openSection} />
 
       {open && (
         <EditDrawer

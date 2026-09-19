@@ -459,7 +459,10 @@ a:focus-visible {
 .ed-bar {
   position: sticky;
   top: 0;
-  z-index: 60;
+  /* Must outrank the site's own fixed chrome (StickyNav is 90, ScrollProgress
+     100). At 60 the tenant's navigation covered the admin bar entirely as soon
+     as the owner scrolled. */
+  z-index: 200;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -506,6 +509,45 @@ a:focus-visible {
   flex: 1;
 }
 
+/* Section navigator — every editable section, visible without scrolling. */
+.ed-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px;
+  max-width: 46vw;
+}
+
+.ed-bar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.ed-bar-nav .ed-pill {
+  white-space: nowrap;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  color: var(--ed-muted);
+}
+
+.ed-bar-nav .ed-pill:hover {
+  color: var(--ed-text);
+  border-color: color-mix(in srgb, var(--ed-accent) 45%, transparent);
+}
+
+@media (max-width: 900px) {
+  .ed-bar-nav {
+    max-width: 100%;
+    order: 10;
+    width: 100%;
+  }
+
+  .ed-bar {
+    flex-wrap: wrap;
+  }
+}
+
 .ed-pill {
   display: inline-flex;
   align-items: center;
@@ -541,6 +583,9 @@ a:focus-visible {
 
 .ed-section {
   position: relative;
+  /* Leave room for the admin bar and the site's own fixed nav when jumping to a
+     section, so the section's Edit pill is not hidden underneath them. */
+  scroll-margin-top: 104px;
 }
 
 .ed-section::after {
@@ -575,22 +620,22 @@ a:focus-visible {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  opacity: 0;
-  transform: translateY(-4px);
+  /* Always discoverable. A hover-only affordance is invisible on a page this
+     long, so the owner concludes there is nothing else they can edit. */
+  opacity: 0.92;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.ed-section:hover .ed-section-btn,
-.ed-section:focus-within .ed-section-btn {
+.ed-section-btn:hover,
+.ed-section-btn:focus-visible {
   opacity: 1;
-  transform: none;
+  transform: translateY(-1px);
 }
 
-@media (hover: none) {
-  .ed-section-btn {
-    opacity: 1;
-    transform: none;
-  }
+.ed-section:hover::after,
+.ed-section:focus-within::after {
+  border-color: color-mix(in srgb, var(--ed-accent) 45%, transparent);
 }
 
 /* ---- drawer ---- */
@@ -598,7 +643,7 @@ a:focus-visible {
 .ed-scrim {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 300;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(2px);
 }
@@ -608,7 +653,7 @@ a:focus-visible {
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 90;
+  z-index: 310;
   width: min(460px, 100vw);
   display: flex;
   flex-direction: column;
