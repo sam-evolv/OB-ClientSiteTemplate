@@ -27,7 +27,7 @@ const AI_AND_SEARCH_BOTS = [
 // so this single directive is correct for every host.
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const host = (await headers()).get('host')?.split(':')[0];
-  const base = host ? `https://${host}` : process.env.NEXT_PUBLIC_SITE_URL || 'https://openbook.ie';
+  const base = host ? `https://${host}` : process.env.NEXT_PUBLIC_SITE_URL || 'https://donworthstudio.ie';
 
   return {
     rules: [
