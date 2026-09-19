@@ -17,6 +17,10 @@ export interface SaveResult {
   ok: boolean;
   error?: string;
   message?: string;
+  /** Public URL of an image just stored — lets the panel refresh in place. */
+  url?: string;
+  /** Row id of an image just inserted, so a list can append without a reload. */
+  id?: string;
 }
 
 const HERO_MAX_BYTES = 8 * 1024 * 1024;
@@ -179,7 +183,7 @@ export async function uploadHeroAction(formData: FormData): Promise<SaveResult> 
 
     revalidatePath('/dashboard');
     revalidatePath('/');
-    return { ok: true, message: 'Hero photo updated.' };
+    return { ok: true, message: 'Hero photo updated.', url };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed.';
     return { ok: false, error: message };
@@ -235,14 +239,18 @@ export async function addGalleryImageAction(formData: FormData): Promise<SaveRes
     const { data: urlData } = sb.storage.from('gallery-images').getPublicUrl(path);
     const url = urlData.publicUrl;
 
-    const { error: mediaError } = await sb.from('business_media').insert({
-      business_id: business.id,
-      kind: 'gallery',
-      media_type: 'image',
-      url,
-      sort_order: nextOrder,
-      alt: business.name,
-    });
+    const { data: inserted, error: mediaError } = await sb
+      .from('business_media')
+      .insert({
+        business_id: business.id,
+        kind: 'gallery',
+        media_type: 'image',
+        url,
+        sort_order: nextOrder,
+        alt: business.name,
+      })
+      .select('id')
+      .single();
     if (mediaError) throw mediaError;
 
     // Compatibility mirror for the legacy array reader.
@@ -252,7 +260,7 @@ export async function addGalleryImageAction(formData: FormData): Promise<SaveRes
 
     revalidatePath('/dashboard');
     revalidatePath('/');
-    return { ok: true, message: 'Photo added.' };
+    return { ok: true, message: 'Photo added.', id: inserted?.id as string, url };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed.';
     return { ok: false, error: message };
@@ -497,7 +505,7 @@ export async function uploadAboutPortraitAction(formData: FormData): Promise<Sav
 
     revalidatePath('/dashboard');
     revalidatePath('/');
-    return { ok: true, message: 'Photo updated.' };
+    return { ok: true, message: 'Photo updated.', url };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed.';
     return { ok: false, error: message };

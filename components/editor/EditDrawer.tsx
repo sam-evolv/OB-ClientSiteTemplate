@@ -147,7 +147,7 @@ function ActionForm({
 }
 
 function HeroPanel({ content }: { content: EditorContent }) {
-  const [hasImage, setHasImage] = useState(Boolean(content.hero.imageUrl));
+  const [img, setImg] = useState(content.hero.imageUrl);
   const [pending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -164,10 +164,10 @@ function HeroPanel({ content }: { content: EditorContent }) {
       <div className="ed-field">
         <span className="ed-label">Hero photo</span>
         <span className="ed-help">JPEG, PNG or WebP. The site crops it to a wide landscape automatically.</span>
-        {hasImage && content.hero.imageUrl && (
+        {img && (
           <div className="ed-media-item" style={{ aspectRatio: '16 / 9', marginTop: 6 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={content.hero.imageUrl} alt="" />
+            <img src={img} alt="" />
           </div>
         )}
         <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
@@ -178,20 +178,22 @@ function HeroPanel({ content }: { content: EditorContent }) {
             fd.append('file', file);
             startTransition(async () => {
               const res = await uploadHeroAction(fd);
-              if (res.ok) setHasImage(true);
+              // Show the new photo straight away; leaving the old preview up
+              // makes a successful replace look like it did nothing.
+              if (res.ok) { setImg(res.url ?? null); if (fileRef.current) fileRef.current.value = ''; }
             });
           }} />
           <button className="ed-button ed-button-ghost" type="button" disabled={pending} onClick={() => fileRef.current?.click()}>
-            {pending ? 'Uploading…' : hasImage ? 'Replace photo' : 'Upload photo'}
+            {pending ? 'Uploading…' : img ? 'Replace photo' : 'Upload photo'}
           </button>
-          {hasImage && (
+          {img && (
             <button
               className="ed-button ed-button-danger"
               type="button"
               disabled={pending}
               onClick={() => startTransition(async () => {
                 const res = await removeHeroAction();
-                if (res.ok) setHasImage(false);
+                if (res.ok) setImg(null);
               })}
             >
               Remove
@@ -204,7 +206,7 @@ function HeroPanel({ content }: { content: EditorContent }) {
 }
 
 function AboutPanel({ content }: { content: EditorContent }) {
-  const [hasPortrait, setHasPortrait] = useState(Boolean(content.about.portraitUrl));
+  const [portrait, setPortrait] = useState(content.about.portraitUrl);
   const [pending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -227,10 +229,10 @@ function AboutPanel({ content }: { content: EditorContent }) {
       <div className="ed-field">
         <span className="ed-label">About photo</span>
         <span className="ed-help">The portrait beside your About text. Cropped to a tall portrait automatically.</span>
-        {hasPortrait && content.about.portraitUrl && (
+        {portrait && (
           <div className="ed-media-item" style={{ aspectRatio: '4 / 5', maxWidth: 180, marginTop: 6 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={content.about.portraitUrl} alt="" />
+            <img src={portrait} alt="" />
           </div>
         )}
         <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
@@ -246,12 +248,12 @@ function AboutPanel({ content }: { content: EditorContent }) {
               fd.append('file', file);
               startTransition(async () => {
                 const res = await uploadAboutPortraitAction(fd);
-                if (res.ok) setHasPortrait(true);
+                if (res.ok) { setPortrait(res.url ?? null); if (fileRef.current) fileRef.current.value = ''; }
               });
             }}
           />
           <button className="ed-button ed-button-ghost" type="button" disabled={pending} onClick={() => fileRef.current?.click()}>
-            {pending ? 'Uploading…' : hasPortrait ? 'Replace photo' : 'Upload photo'}
+            {pending ? 'Uploading…' : portrait ? 'Replace photo' : 'Upload photo'}
           </button>
         </div>
       </div>
@@ -323,7 +325,15 @@ function GalleryPanel({ content }: { content: EditorContent }) {
           startTransition(async () => {
             const res = await addGalleryImageAction(fd);
             if (!res.ok) setError(res.error ?? 'Upload failed.');
-            else window.location.reload();
+            else if (res.url && res.id) {
+              // Append in place. A full reload would close the panel and bounce
+              // the owner to the top of the page, which reads as "it failed".
+              setItems((prev) => [
+                ...prev,
+                { id: res.id as string, url: res.url as string, alt: null, caption: null },
+              ]);
+              if (fileRef.current) fileRef.current.value = '';
+            }
           });
         }}
       />
