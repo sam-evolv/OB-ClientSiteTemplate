@@ -6,9 +6,14 @@ import {
   removeGalleryImageAction,
   removeHeroAction,
   saveAboutAction,
+  saveAmenitiesAction,
   saveContactAction,
+  saveFaqAction,
   saveHeroAction,
+  saveMissionAction,
   saveServiceAction,
+  saveStatsAction,
+  uploadAboutPortraitAction,
   uploadHeroAction,
   type SaveResult,
 } from '@/lib/editor/save-actions';
@@ -33,6 +38,8 @@ export interface EditorService {
   description: string | null;
   price_cents: number | null;
   is_active: boolean;
+  cta_url: string | null;
+  cta_label: string | null;
 }
 
 export interface EditorContent {
@@ -42,7 +49,11 @@ export interface EditorContent {
     subhead: string | null;
     imageUrl: string | null;
   };
-  about: { headline: string | null; body: string | null };
+  stats: Array<{ value: string; label: string }>;
+  mission: { statement: string | null; highlight: string | null };
+  about: { headline: string | null; body: string | null; portraitUrl: string | null };
+  included: string[];
+  faq: Array<{ q: string; a: string }>;
   contact: { phone: string | null; email: string | null; address: string | null };
   gallery: EditorGalleryItem[];
   services: EditorService[];
@@ -193,18 +204,58 @@ function HeroPanel({ content }: { content: EditorContent }) {
 }
 
 function AboutPanel({ content }: { content: EditorContent }) {
+  const [hasPortrait, setHasPortrait] = useState(Boolean(content.about.portraitUrl));
+  const [pending, startTransition] = useTransition();
+  const fileRef = useRef<HTMLInputElement>(null);
+
   return (
-    <ActionForm action={saveAboutAction} submitLabel="Save about">
-      <Field label="Heading" name="headline" max={ABOUT_HEADLINE_MAX} value={content.about.headline ?? ''} />
-      <Field
-        label="About text"
-        name="body"
-        max={ABOUT_BODY_MAX}
-        textarea
-        value={content.about.body ?? ''}
-        help="Blank lines start a new paragraph."
-      />
-    </ActionForm>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <ActionForm action={saveAboutAction} submitLabel="Save about">
+        <Field label="Heading" name="headline" max={ABOUT_HEADLINE_MAX} value={content.about.headline ?? ''} />
+        <Field
+          label="About text"
+          name="body"
+          max={ABOUT_BODY_MAX}
+          textarea
+          value={content.about.body ?? ''}
+          help="Blank lines start a new paragraph."
+        />
+      </ActionForm>
+
+      <hr style={{ border: 0, borderTop: '1px solid var(--ed-line)', margin: 0 }} />
+
+      <div className="ed-field">
+        <span className="ed-label">About photo</span>
+        <span className="ed-help">The portrait beside your About text. Cropped to a tall portrait automatically.</span>
+        {hasPortrait && content.about.portraitUrl && (
+          <div className="ed-media-item" style={{ aspectRatio: '4 / 5', maxWidth: 180, marginTop: 6 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={content.about.portraitUrl} alt="" />
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const fd = new FormData();
+              fd.append('file', file);
+              startTransition(async () => {
+                const res = await uploadAboutPortraitAction(fd);
+                if (res.ok) setHasPortrait(true);
+              });
+            }}
+          />
+          <button className="ed-button ed-button-ghost" type="button" disabled={pending} onClick={() => fileRef.current?.click()}>
+            {pending ? 'Uploading…' : hasPortrait ? 'Replace photo' : 'Upload photo'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -305,6 +356,20 @@ function ServicesPanel({ content }: { content: EditorContent }) {
             placeholder="e.g. 79.00"
           />
           <Field label="Description" name="description" value={s.description ?? ''} max={600} textarea />
+          <Field
+            label="Button text"
+            name="cta_label"
+            value={s.cta_label ?? ''}
+            placeholder="Join now"
+            help="The wording on the button, e.g. “Join now” or “Book a lesson”."
+          />
+          <Field
+            label="Button link"
+            name="cta_url"
+            value={s.cta_url ?? ''}
+            placeholder="https://buy.stripe.com/..."
+            help="Where the button sends people — your Stripe payment link, or any page."
+          />
           <label className="ed-field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <input type="checkbox" name="is_active" defaultChecked={s.is_active} />
             <span className="ed-help">Show this on the website</span>
@@ -315,11 +380,153 @@ function ServicesPanel({ content }: { content: EditorContent }) {
   );
 }
 
+/** Repeating value/label pairs — the strip of facts under the hero. */
+function StatsPanel({ content }: { content: EditorContent }) {
+  const [rows, setRows] = useState(content.stats);
+  const set = (i: number, k: 'value' | 'label', v: string) =>
+    setRows((r) => r.map((row, idx) => (idx === i ? { ...row, [k]: v } : row)));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <span className="ed-help">
+        The short facts under your hero. The big word is the value, the small line sits beneath it.
+      </span>
+      {rows.map((row, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 12, borderBottom: '1px solid var(--ed-line)' }}>
+          <input className="ed-input" value={row.value} placeholder="For all" onChange={(e) => set(i, 'value', e.target.value)} />
+          <input className="ed-input" value={row.label} placeholder="every body, every level" onChange={(e) => set(i, 'label', e.target.value)} />
+          <button className="ed-button ed-button-danger" type="button" onClick={() => setRows((r) => r.filter((_, idx) => idx !== i))}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button
+        className="ed-button ed-button-ghost"
+        type="button"
+        onClick={() => setRows((r) => r.concat({ value: '', label: '' }))}
+      >
+        Add a fact
+      </button>
+      <SaveList action={saveStatsAction} name="stats" rows={rows} label="Save" />
+    </div>
+  );
+}
+
+function SaveList({
+  action,
+  name,
+  rows,
+  label,
+}: {
+  action: (fd: FormData) => Promise<SaveResult>;
+  name: string;
+  rows: unknown;
+  label: string;
+}) {
+  const [state, setState] = useState<SaveResult | null>(null);
+  const [pending, startTransition] = useTransition();
+  return (
+    <>
+      {state?.error && <p className="ed-error">{state.error}</p>}
+      {state?.ok && state.message && <p className="ed-ok">{state.message}</p>}
+      <button
+        className="ed-button"
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            const fd = new FormData();
+            fd.append(name, JSON.stringify(rows));
+            setState(await action(fd));
+          })
+        }
+      >
+        {pending ? 'Saving…' : label}
+      </button>
+    </>
+  );
+}
+
+function MissionPanel({ content }: { content: EditorContent }) {
+  return (
+    <ActionForm action={saveMissionAction} submitLabel="Save mission">
+      <Field
+        label="Mission statement"
+        name="mission_statement"
+        max={600}
+        textarea
+        value={content.mission.statement ?? ''}
+      />
+      <Field
+        label="Words to emphasise"
+        name="mission_highlight_word"
+        max={80}
+        value={content.mission.highlight ?? ''}
+        help="This exact phrase is highlighted inside the statement above."
+      />
+    </ActionForm>
+  );
+}
+
+function IncludedPanel({ content }: { content: EditorContent }) {
+  const [rows, setRows] = useState<string[]>(content.included);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <span className="ed-help">The list of what a membership includes.</span>
+      {rows.map((row, i) => (
+        <div key={i} style={{ display: 'flex', gap: 8 }}>
+          <input
+            className="ed-input"
+            value={row}
+            onChange={(e) => setRows((r) => r.map((v, idx) => (idx === i ? e.target.value : v)))}
+          />
+          <button className="ed-button ed-button-danger" type="button" onClick={() => setRows((r) => r.filter((_, idx) => idx !== i))}>
+            ×
+          </button>
+        </div>
+      ))}
+      <button className="ed-button ed-button-ghost" type="button" onClick={() => setRows((r) => r.concat(''))}>
+        Add an item
+      </button>
+      <SaveList action={saveAmenitiesAction} name="amenities" rows={rows} label="Save" />
+    </div>
+  );
+}
+
+function FaqPanel({ content }: { content: EditorContent }) {
+  const [rows, setRows] = useState(content.faq);
+  const set = (i: number, k: 'q' | 'a', v: string) =>
+    setRows((r) => r.map((row, idx) => (idx === i ? { ...row, [k]: v } : row)));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <span className="ed-help">Questions and answers shown at the bottom of your website.</span>
+      {rows.map((row, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 12, borderBottom: '1px solid var(--ed-line)' }}>
+          <input className="ed-input" value={row.q} placeholder="Question" onChange={(e) => set(i, 'q', e.target.value)} />
+          <textarea className="ed-textarea" value={row.a} placeholder="Answer" onChange={(e) => set(i, 'a', e.target.value)} />
+          <button className="ed-button ed-button-danger" type="button" onClick={() => setRows((r) => r.filter((_, idx) => idx !== i))}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button className="ed-button ed-button-ghost" type="button" onClick={() => setRows((r) => r.concat({ q: '', a: '' }))}>
+        Add a question
+      </button>
+      <SaveList action={saveFaqAction} name="faq" rows={rows} label="Save" />
+    </div>
+  );
+}
+
 const PANELS: Record<string, { title: string; render: (c: EditorContent) => React.ReactNode }> = {
   hero: { title: 'Hero', render: (c) => <HeroPanel content={c} /> },
+  stats: { title: 'Your key facts', render: (c) => <StatsPanel content={c} /> },
+  mission: { title: 'Mission statement', render: (c) => <MissionPanel content={c} /> },
+  services: { title: 'Services & pricing', render: (c) => <ServicesPanel content={c} /> },
+  included: { title: "What's included", render: (c) => <IncludedPanel content={c} /> },
   about: { title: 'About', render: (c) => <AboutPanel content={c} /> },
   gallery: { title: 'Gallery', render: (c) => <GalleryPanel content={c} /> },
-  services: { title: 'Services & pricing', render: (c) => <ServicesPanel content={c} /> },
+  faq: { title: 'Frequently asked questions', render: (c) => <FaqPanel content={c} /> },
   contact: { title: 'Contact', render: (c) => <ContactPanel content={c} /> },
   location: { title: 'Address & hours', render: (c) => <ContactPanel content={c} /> },
 };

@@ -34,7 +34,7 @@ export default async function DashboardPage() {
       .order('sort_order', { ascending: true, nullsFirst: false }),
     sb
       .from('services')
-      .select('id, name, description, price_cents, is_active')
+      .select('id, name, description, price_cents, is_active, cta_url, cta_label')
       .eq('business_id', business.id)
       .order('sort_order', { ascending: true, nullsFirst: false }),
   ]);
@@ -46,10 +46,18 @@ export default async function DashboardPage() {
       subhead: b.hero_subhead || null,
       imageUrl: b.hero_image?.url || null,
     },
+    stats: b.stats.map((s) => ({ value: s.value ?? '', label: s.label ?? '' })),
+    mission: {
+      statement: b.mission_statement || null,
+      highlight: b.mission_highlight_word || null,
+    },
     about: {
       headline: b.about.headline || null,
       body: b.about.body || null,
+      portraitUrl: b.about_portrait?.url || null,
     },
+    included: b.amenities ?? [],
+    faq: (b.faq ?? []).map((f) => ({ q: f.q, a: f.a })),
     contact: {
       phone: b.phone || null,
       email: b.email || null,
@@ -67,6 +75,8 @@ export default async function DashboardPage() {
       description: (s.description as string | null) ?? null,
       price_cents: (s.price_cents as number | null) ?? null,
       is_active: Boolean(s.is_active),
+      cta_url: (s.cta_url as string | null) ?? null,
+      cta_label: (s.cta_label as string | null) ?? null,
     })),
   };
 

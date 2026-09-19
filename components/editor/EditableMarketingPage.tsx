@@ -94,15 +94,15 @@ export function EditableMarketingPage({
 
       {wrap('hero', 'hero', <Hero b={b} accent={accent} variant={b.hero_variant} />)}
 
-      {show.stats && <StatsBar b={b} accent={accent} />}
-      {show.mission && <Mission b={b} accent={accent} />}
+      {show.stats && wrap('stats', 'key facts', <StatsBar b={b} accent={accent} />)}
+      {show.mission && wrap('mission', 'mission', <Mission b={b} accent={accent} />)}
       {show.events && wrap('services', 'services', <Events b={b} accent={accent} />)}
-      {show.included && <Amenities b={b} accent={accent} />}
+      {show.included && wrap('included', "what's included", <Amenities b={b} accent={accent} />)}
       {show.about && wrap('about', 'about', <About b={b} accent={accent} />)}
       {show.gallery && wrap('gallery', 'gallery', <Gallery b={b} accent={accent} />)}
       {show.travel && <WhereWeGo b={b} accent={accent} />}
       {show.location && wrap('location', 'address & hours', <LocationHours b={b} accent={accent} />)}
-      {show.faq && <Faq b={b} accent={accent} />}
+      {show.faq && wrap('faq', 'questions', <Faq b={b} accent={accent} />)}
       {show.press && <Press b={b} accent={accent} />}
       {show.contact && wrap('contact', 'contact', <Contact b={b} accent={accent} />)}
 

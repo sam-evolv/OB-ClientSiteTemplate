@@ -40,7 +40,7 @@ export function EditorBar({
           <img className="ed-bar-logo" src={logoUrl} alt="" width={26} height={26} />
         )}
         <span className="ed-bar-name">{businessName}</span>
-        <span className="ed-bar-tag">Website admin</span>
+        <span className="ed-bar-tag">Website admin · edits go live straight away</span>
       </div>
 
       <nav className="ed-bar-nav" aria-label="Editable sections">
