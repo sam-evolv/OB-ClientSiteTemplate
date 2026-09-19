@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * extract-v9-images.ts
  *

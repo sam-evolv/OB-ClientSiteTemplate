@@ -32,7 +32,6 @@ export default async function EditorLoginPage() {
     <main className="ed-auth">
       <div className="ed-auth-card">
         {b?.logo && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img className="ed-auth-logo" src={b.logo} alt={b.name} width={72} height={72} />
         )}
         <p className="ed-eyebrow">Website admin</p>

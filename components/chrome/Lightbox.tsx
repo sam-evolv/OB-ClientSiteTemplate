@@ -92,10 +92,14 @@ export function Lightbox({
   // 0 = freshly opened (zoom-fade); 1 = next; -1 = prev (slide).
   const [direction, setDirection] = useState(0);
 
-  useEffect(() => {
+  // Adjust state during render when the prop changes, rather than in an effect,
+  // so the first paint of a newly opened item is already correct.
+  const [lastOpenIndex, setLastOpenIndex] = useState(openIndex);
+  if (openIndex !== lastOpenIndex) {
+    setLastOpenIndex(openIndex);
     setIdx(openIndex ?? 0);
     setDirection(0);
-  }, [openIndex]);
+  }
 
   useEffect(() => {
     if (openIndex === null) return;
@@ -301,7 +305,6 @@ export function Lightbox({
         {item.type === 'video' && item.videoUrl ? (
           <LightboxVideo src={item.videoUrl} poster={item.posterUrl} />
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imgSrc}
             alt={item.alt || ''}

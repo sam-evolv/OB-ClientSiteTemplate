@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/dashboard/login?error=not_configured`);
   }
 
-  let response = NextResponse.redirect(`${origin}${next}`);
+  const response = NextResponse.redirect(`${origin}${next}`);
 
   const supabase = createServerClient(url, anonKey, {
     cookies: {

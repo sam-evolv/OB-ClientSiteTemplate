@@ -166,7 +166,6 @@ function HeroPanel({ content }: { content: EditorContent }) {
         <span className="ed-help">JPEG, PNG or WebP. The site crops it to a wide landscape automatically.</span>
         {img && (
           <div className="ed-media-item" style={{ aspectRatio: '16 / 9', marginTop: 6 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={img} alt="" />
           </div>
         )}
@@ -231,7 +230,6 @@ function AboutPanel({ content }: { content: EditorContent }) {
         <span className="ed-help">The portrait beside your About text. Cropped to a tall portrait automatically.</span>
         {portrait && (
           <div className="ed-media-item" style={{ aspectRatio: '4 / 5', maxWidth: 180, marginTop: 6 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={portrait} alt="" />
           </div>
         )}
@@ -287,7 +285,6 @@ function GalleryPanel({ content }: { content: EditorContent }) {
       <div className="ed-media-grid">
         {items.map((item) => (
           <div className="ed-media-item" key={item.id}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={item.url} alt={item.alt ?? ''} />
             <button
               type="button"

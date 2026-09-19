@@ -36,7 +36,6 @@ export function EditorBar({
     <div className="ed-bar">
       <div className="ed-bar-brand">
         {logoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img className="ed-bar-logo" src={logoUrl} alt="" width={26} height={26} />
         )}
         <span className="ed-bar-name">{businessName}</span>

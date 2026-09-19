@@ -6,7 +6,24 @@
  * durations are identical to the reference.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+
+/**
+ * Live reduced-motion preference. Read through useSyncExternalStore rather than
+ * set in an effect, so nothing renders hidden then flips. The server snapshot is
+ * false, so SSR and first paint assume motion is allowed.
+ */
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const m = window.matchMedia('(prefers-reduced-motion: reduce)');
+      m.addEventListener('change', onChange);
+      return () => m.removeEventListener('change', onChange);
+    },
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    () => false
+  );
+}
 
 /**
  * Reveal-on-scroll. Gates a section's opacity/transform until it enters the
@@ -15,12 +32,10 @@ import { useEffect, useRef, useState } from 'react';
 export function useReveal(threshold = 0.12): [React.RefObject<HTMLElement | null>, boolean] {
   const ref = useRef<HTMLElement | null>(null);
   const [v, setV] = useState(false);
+  const reduced = usePrefersReducedMotion();
   useEffect(() => {
-    if (!ref.current) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setV(true);
-      return;
-    }
+    // Reduced motion never hides content, so there is nothing to observe.
+    if (reduced || !ref.current) return;
     const o = new IntersectionObserver(
       (entries) =>
         entries.forEach((x) => {
@@ -33,8 +48,8 @@ export function useReveal(threshold = 0.12): [React.RefObject<HTMLElement | null
     );
     o.observe(ref.current);
     return () => o.disconnect();
-  }, [threshold]);
-  return [ref, v];
+  }, [threshold, reduced]);
+  return [ref, v || reduced];
 }
 
 /** True once the page has scrolled past `px` pixels. Drives the sticky chrome. */
@@ -78,12 +93,9 @@ export function useActiveSection(ids: string[]): string {
  */
 export function useCountUp(target: number, active: boolean, duration = 1400): number {
   const [val, setVal] = useState(0);
+  const reduced = usePrefersReducedMotion();
   useEffect(() => {
-    if (!active) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setVal(target);
-      return;
-    }
+    if (!active || reduced) return;
     let raf: number;
     const start = performance.now();
     const tick = (now: number) => {
@@ -94,6 +106,7 @@ export function useCountUp(target: number, active: boolean, duration = 1400): nu
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, target, duration]);
-  return val;
+  }, [active, target, duration, reduced]);
+  // Reduced motion snaps straight to the target rather than animating to it.
+  return reduced && active ? target : val;
 }
