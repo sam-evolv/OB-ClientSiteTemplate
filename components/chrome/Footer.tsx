@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { FONT_SERIF, FONT_SANS, FONT_MONO } from '@/lib/ui/fonts';
 import type { CSSProperties } from 'react';
 import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
@@ -64,7 +65,7 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
         }}
       >
         <div className="footer-meta-left" style={{ justifySelf: 'start' }}>
-          <a
+          <Link
             href="/dashboard"
             className="studio-mark"
             aria-label={`${b.name} — website admin sign in`}
@@ -87,7 +88,7 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
             >
               Admin
             </span>
-          </a>
+          </Link>
         </div>
 
         <a

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { resolveForHost } from '@/lib/business/resolve';
 import { getEditorOwner } from '@/lib/editor/session';
@@ -40,9 +41,9 @@ export default async function EditorLoginPage() {
 
         <LoginForm accent={accent} />
 
-        <a className="ed-auth-back" href="/">
+        <Link className="ed-auth-back" href="/">
           ← Back to the website
-        </a>
+        </Link>
       </div>
     </main>
   );
