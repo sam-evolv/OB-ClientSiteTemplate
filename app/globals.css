@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * OpenBook customer site — global styles.
+ * Donworth Studio customer site — global styles.
  *
  * Locked design-system tokens, ambient motion keyframes, film grain, the hover
  * vocabulary and the responsive rules. Ported value-for-value from
@@ -279,21 +279,20 @@ a:focus-visible {
   }
 }
 
-/* OpenBook badge — single image, subtle hover lift + accent glow */
-.ob-badge {
+/* Donworth Studio mark — single image, discreet by default, subtle hover lift */
+.studio-mark {
   display: inline-block;
+  opacity: 0.7;
   transition:
     transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 280ms ease;
-  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.18));
+    opacity 280ms ease;
 }
 @media (hover: hover) {
-  .ob-badge:hover {
-    transform: translateY(-2px) scale(1.03);
-    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.55))
-      brightness(1.06);
+  .studio-mark:hover {
+    transform: translateY(-2px);
+    opacity: 1;
   }
-  .ob-badge:active {
+  .studio-mark:active {
     transform: translateY(0) scale(1.01);
     transition-duration: 120ms;
   }

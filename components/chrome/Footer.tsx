@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { OpenBookBadge } from './OpenBookBadge';
+import { StudioMark } from './StudioMark';
 import { FONT_SERIF, FONT_SANS, FONT_MONO } from '@/lib/ui/fonts';
 import type { CSSProperties } from 'react';
 import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
@@ -9,7 +9,7 @@ import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
 /**
  * Footer — centred closing composition. Big italic name + tagline, then a 3-col
  * meta row balanced around the 140px logo (always-on accent glow, hover spins
- * 360°): OpenBook pill left, copyright right. Ported near-verbatim from
+ * 360°): Donworth Studio mark left, copyright right. Ported near-verbatim from
  * handoff/reference/sections.jsx.
  */
 export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
@@ -51,7 +51,7 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
         </div>
       </div>
 
-      {/* Meta row — logo is the literal centre, flanked by OpenBook (left) and
+      {/* Meta row — logo is the literal centre, flanked by the studio mark (left) and
           copyright (right). The logo carries the glow + hover spin. */}
       <div
         className="footer-meta"
@@ -65,7 +65,7 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
         }}
       >
         <div className="footer-meta-left" style={{ justifySelf: 'start' }}>
-          <OpenBookBadge size="md" />
+          <StudioMark size="md" />
         </div>
 
         <a
