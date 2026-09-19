@@ -23,9 +23,19 @@ const HERO_MAX_BYTES = 8 * 1024 * 1024;
 const GALLERY_MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
+/**
+ * Textareas hand back CRLF: the DOM normalises their value's line endings. The
+ * public templates split paragraphs on "\n\n", so a CRLF round-trip would
+ * silently collapse every paragraph into one block. Store LF, always.
+ */
+function text(value: unknown, max: number): string {
+  return typeof value === 'string'
+    ? value.replace(/\r\n?/g, '\n').trim().slice(0, max)
+    : '';
+}
+
 function clean(value: FormDataEntryValue | null, max: number): string | null {
-  const s = typeof value === 'string' ? value.trim() : '';
-  return s ? s.slice(0, max) : null;
+  return text(value, max) || null;
 }
 
 /**
@@ -283,8 +293,8 @@ export async function updateGalleryMetaAction(
   const { business, sb } = await editorContext();
 
   const update: Record<string, string | null> = {};
-  if (patch.alt !== undefined) update.alt = patch.alt.trim().slice(0, ALT_MAX) || null;
-  if (patch.caption !== undefined) update.caption = patch.caption.trim().slice(0, CAPTION_MAX) || null;
+  if (patch.alt !== undefined) update.alt = text(patch.alt, ALT_MAX) || null;
+  if (patch.caption !== undefined) update.caption = text(patch.caption, CAPTION_MAX) || null;
   if (Object.keys(update).length === 0) return { ok: true };
 
   const { error } = await sb
@@ -367,8 +377,8 @@ export async function saveStatsAction(formData: FormData): Promise<SaveResult> {
 
   const cleaned = stats
     .map((s) => ({
-      value: (s.value ?? '').trim().slice(0, 40),
-      label: (s.label ?? '').trim().slice(0, 60),
+      value: text(s.value, 40),
+      label: text(s.label, 60),
     }))
     .filter((s) => s.value || s.label);
 
@@ -407,7 +417,7 @@ export async function saveAmenitiesAction(formData: FormData): Promise<SaveResul
   if (!items) return { ok: false, error: 'Could not read that list.' };
 
   const cleaned = items
-    .map((i) => String(i ?? '').trim().slice(0, 120))
+    .map((i) => text(i, 120))
     .filter(Boolean);
 
   const { error } = await sb
@@ -429,8 +439,8 @@ export async function saveFaqAction(formData: FormData): Promise<SaveResult> {
 
   const cleaned = items
     .map((f) => ({
-      q: (f.q ?? '').trim().slice(0, 200),
-      a: (f.a ?? '').trim().slice(0, 1200),
+      q: text(f.q, 200),
+      a: text(f.a, 1200),
     }))
     .filter((f) => f.q && f.a);
 

@@ -13,5 +13,5 @@ export const ABOUT_BODY_MAX = 4000;
 export const CAPTION_MAX = 200;
 export const ALT_MAX = 200;
 
-/** Matches the number of gallery images the public template renders. */
-export const GALLERY_MAX = 8;
+/** Gallery cap. The template lays out any number; this is a practical ceiling. */
+export const GALLERY_MAX = 10;
