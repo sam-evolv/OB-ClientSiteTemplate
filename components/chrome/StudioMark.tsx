@@ -3,10 +3,9 @@ import Image from 'next/image';
 /**
  * Donworth Studio mark — the studio attribution in the footer's left slot.
  *
- * It is also the business owner's entry point into the dashboard: clicking the
- * mark opens the studio-wide owner sign-in, which resolves the signed-in
- * owner's own business. That is an entry point, not access control — the
- * password is the control.
+ * Links to the studio's own website. Deliberately NOT a sign-in: the mark is
+ * attribution, and sending someone who clicked a studio logo to a login page is
+ * a dead end. The owner's way into the editor is the separate "Admin" button.
  *
  * donworth-studio-mark.png is an APP asset (README §5): it ships with the
  * template and is identical for every customer, so it is referenced from
@@ -16,21 +15,16 @@ import Image from 'next/image';
  * sits flush without a plate behind it. Intrinsic size is 1233×281; CSS
  * renders it at height h with width auto to preserve the exact ratio.
  */
-
-const APP_URL =
-  process.env.NEXT_PUBLIC_STUDIO_APP_URL?.replace(/\/$/, '') || 'https://app.donworthstudio.ie';
-
-/** Sign in, then land on the owner's dashboard. */
-const OWNER_SIGN_IN_URL = `${APP_URL}/login?next=${encodeURIComponent('/dashboard')}`;
+const STUDIO_URL = 'https://donworthstudio.ie';
 
 export function StudioMark({ size = 'sm' }: { size?: 'sm' | 'md' }) {
   const h = size === 'sm' ? 40 : 56;
   return (
     <a
-      href={OWNER_SIGN_IN_URL}
+      href={STUDIO_URL}
       rel="noopener"
       className="studio-mark"
-      aria-label="Donworth Studio — business owner sign in"
+      aria-label="Donworth Studio — website"
       style={{ display: 'inline-block', textDecoration: 'none', lineHeight: 0 }}
     >
       <Image

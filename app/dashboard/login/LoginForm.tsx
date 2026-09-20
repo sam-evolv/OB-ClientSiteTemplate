@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { signInAction, type SignInState } from '@/lib/editor/auth-actions';
 
 const INITIAL: SignInState = { error: null };
@@ -50,11 +51,9 @@ export function LoginForm({ accent }: { accent: string }) {
       </button>
 
       <p className="ed-hint">
-        Forgot your password? Email{' '}
-        <a href="mailto:sam@donworthstudio.ie" style={{ color: accent }}>
-          sam@donworthstudio.ie
-        </a>{' '}
-        and we&rsquo;ll reset it for you.
+        <Link href="/dashboard/forgot" style={{ color: accent }}>
+          Forgot your password?
+        </Link>
       </p>
     </form>
   );

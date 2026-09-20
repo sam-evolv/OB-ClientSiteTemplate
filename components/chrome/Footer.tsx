@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FONT_SERIF, FONT_SANS, FONT_MONO } from '@/lib/ui/fonts';
 import type { CSSProperties } from 'react';
 import type { BusinessVM } from '@/lib/viewModel/businessViewModel';
+import { StudioMark } from './StudioMark';
 
 /**
  * Footer — centred closing composition. Big italic name + tagline, then a 3-col
@@ -65,30 +66,8 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
         }}
       >
         <div className="footer-meta-left" style={{ justifySelf: 'start' }}>
-          <Link
-            href="/dashboard"
-            className="studio-mark"
-            aria-label={`${b.name} — website admin sign in`}
-            style={{ display: 'inline-block', textDecoration: 'none', lineHeight: 0 }}
-          >
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 7,
-                padding: '6px 12px',
-                borderRadius: 999,
-                border: '1px solid rgba(255,255,255,0.14)',
-                fontFamily: FONT_MONO,
-                fontSize: 10,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.55)',
-              }}
-            >
-              Admin
-            </span>
-          </Link>
+          {/* Studio attribution — links to the studio site, not to a sign-in. */}
+          <StudioMark />
         </div>
 
         <a
@@ -138,6 +117,31 @@ export function Footer({ b, accent }: { b: BusinessVM; accent: string }) {
             }}
           >
             Cork, Ireland
+          </div>
+
+          {/* The owner's way into the editor. Separate from the studio mark, which
+              goes to the studio site — one is attribution, this one is a tool. */}
+          <div style={{ marginTop: 12 }}>
+            <Link
+              href="/dashboard"
+              aria-label={`${b.name} — website admin sign in`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 7,
+                padding: '6px 12px',
+                borderRadius: 999,
+                border: '1px solid rgba(255,255,255,0.14)',
+                fontFamily: FONT_MONO,
+                fontSize: 10,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.55)',
+                textDecoration: 'none'
+              }}
+            >
+              Admin
+            </Link>
           </div>
           {(b.privacy_url || b.terms_url) && (
             <div

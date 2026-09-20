@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { EmailOtpType } from '@supabase/supabase-js';
+import { RECOVERY_COOKIE, RECOVERY_MAX_AGE_SECONDS } from '@/lib/editor/recovery';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(
       `${origin}/dashboard/login?error=${encodeURIComponent(error.message)}`,
     );
+  }
+
+  // A recovery link proves identity, so it is allowed to set a password without
+  // knowing the current one. Flag the session so /reset-password can tell the
+  // difference between this and an ordinary signed-in session.
+  if (type === 'recovery') {
+    response.cookies.set(RECOVERY_COOKIE, '1', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: proto === 'https',
+      path: '/',
+      maxAge: RECOVERY_MAX_AGE_SECONDS,
+    });
   }
 
   return response;

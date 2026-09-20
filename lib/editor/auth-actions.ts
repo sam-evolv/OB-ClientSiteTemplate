@@ -2,8 +2,20 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { cookies, headers } from 'next/headers';
 import { createEditorClient } from './supabase-server';
 import { passwordProblem } from './password';
+import { RECOVERY_COOKIE } from './recovery';
+
+/** The request's own origin, so reset links come back to the host they started on. */
+async function requestOrigin(): Promise<string> {
+  const h = await headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host') ?? '';
+  const proto =
+    h.get('x-forwarded-proto') ??
+    (/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host) ? 'http' : 'https');
+  return host ? `${proto}://${host}` : '';
+}
 
 export interface SignInState {
   error: string | null;
@@ -11,6 +23,11 @@ export interface SignInState {
 
 export interface ChangePasswordState {
   error: string | null;
+}
+
+export interface ResetRequestState {
+  error: string | null;
+  sent: boolean;
 }
 
 /**
@@ -86,6 +103,74 @@ export async function changePasswordAction(
   });
   if (error) return { error: 'Could not save that password. Try a longer one.' };
 
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
+}
+
+/**
+ * Send a password-recovery email.
+ *
+ * Always reports success, whether or not the address has an account — otherwise
+ * this page becomes a way to ask "does this person have an account here?".
+ */
+export async function requestPasswordResetAction(
+  _prev: ResetRequestState,
+  formData: FormData,
+): Promise<ResetRequestState> {
+  const email = String(formData.get('email') ?? '').trim();
+  if (!email) return { error: 'Enter your email address.', sent: false };
+
+  const origin = await requestOrigin();
+  const sb = await createEditorClient();
+
+  // next=/reset-password matches the recovery email template, which the callback
+  // honours. redirectTo must be in the project's allowlist or Supabase silently
+  // falls back to its Site URL.
+  await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?type=recovery&next=/reset-password`,
+  });
+
+  return { error: null, sent: true };
+}
+
+/**
+ * Set a new password from a recovery link.
+ *
+ * No current-password check here — the emailed token is the proof of identity,
+ * and the owner by definition does not know the password they are replacing. The
+ * RECOVERY_COOKIE the callback set is what stops this being reachable from an
+ * ordinary session, and it is cleared as soon as it is used.
+ */
+export async function resetPasswordAction(
+  _prev: ChangePasswordState,
+  formData: FormData,
+): Promise<ChangePasswordState> {
+  const jar = await cookies();
+  if (jar.get(RECOVERY_COOKIE)?.value !== '1') {
+    return { error: 'That reset link has expired. Request a new one.' };
+  }
+
+  const next = String(formData.get('next') ?? '');
+  const confirm = String(formData.get('confirm') ?? '');
+  if (!next) return { error: 'Choose a new password.' };
+  if (next !== confirm) return { error: 'The two passwords do not match.' };
+
+  const problem = passwordProblem(next);
+  if (problem) return { error: problem };
+
+  const sb = await createEditorClient();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  if (!user) return { error: 'That reset link has expired. Request a new one.' };
+
+  const { error } = await sb.auth.updateUser({
+    password: next,
+    data: { must_change_password: false },
+  });
+  if (error) return { error: 'Could not save that password. Try a longer one.' };
+
+  jar.delete(RECOVERY_COOKIE);
   revalidatePath('/dashboard');
   redirect('/dashboard');
 }
