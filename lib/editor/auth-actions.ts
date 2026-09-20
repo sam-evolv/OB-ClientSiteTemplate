@@ -126,9 +126,21 @@ export async function requestPasswordResetAction(
   // next=/reset-password matches the recovery email template, which the callback
   // honours. redirectTo must be in the project's allowlist or Supabase silently
   // falls back to its Site URL.
-  await sb.auth.resetPasswordForEmail(email, {
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/callback?type=recovery&next=/reset-password`,
   });
+
+  // Supabase's built-in mailer allows a very small number of sends per hour, and
+  // a swallowed failure here looks identical to a delivered email — the owner
+  // waits for something that was never sent and reports that resets "don't work".
+  // A rate-limit message reveals nothing about whether the address exists, so it
+  // is safe to surface; every other error stays silent to avoid enumeration.
+  if (error && /rate limit|too many/i.test(error.message)) {
+    return {
+      error: 'Too many reset requests just now. Please wait a few minutes and try again.',
+      sent: false,
+    };
+  }
 
   return { error: null, sent: true };
 }
