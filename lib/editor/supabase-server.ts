@@ -32,7 +32,7 @@ export async function createEditorClient(): Promise<SupabaseClient> {
           });
         } catch {
           // Called from a Server Component render: cookies are read-only here.
-          // The middleware refreshes the session, so this is safe to ignore.
+          // The proxy refreshes the session, so this is safe to ignore.
         }
       },
     },
