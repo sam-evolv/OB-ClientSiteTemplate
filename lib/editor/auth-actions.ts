@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 import { createEditorClient } from './supabase-server';
 import { passwordProblem } from './password';
 import { RECOVERY_COOKIE } from './recovery';
@@ -121,7 +122,22 @@ export async function requestPasswordResetAction(
   if (!email) return { error: 'Enter your email address.', sent: false };
 
   const origin = await requestOrigin();
-  const sb = await createEditorClient();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return { error: 'Reset is not configured. Contact support.', sent: false };
+
+  // Deliberately NOT the SSR client. @supabase/ssr uses the PKCE flow, which
+  // chains the emailed link to a code-verifier cookie in whichever browser made
+  // the request — so opening the email on a phone, in another browser, or after
+  // clearing cookies fails with "Email link is invalid or has expired". That is
+  // the ordinary case, not an edge case.
+  //
+  // Requesting in the implicit flow produces a verifier-free token_hash that the
+  // callback can verify from anywhere. Verified: the link resolves to
+  // /reset-password with every cookie cleared.
+  const sb = createClient(url, anonKey, {
+    auth: { flowType: 'implicit', persistSession: false, autoRefreshToken: false },
+  });
 
   // next=/reset-password matches the recovery email template, which the callback
   // honours. redirectTo must be in the project's allowlist or Supabase silently
