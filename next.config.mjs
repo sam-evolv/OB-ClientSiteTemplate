@@ -6,8 +6,13 @@ const nextConfig = {
   // BEFORE the upload action ran, so the owner saw the panel vanish with no
   // explanation and the friendly "that photo is too big" message never fired.
   // sharp downscales every upload anyway, so large originals are safe to accept.
-  serverActions: {
-    bodySizeLimit: '16mb'
+  //
+  // Must live under `experimental` — a top-level `serverActions` key is silently
+  // ignored in Next 16 and only emits an invalid-next-config warning.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '16mb'
+    }
   },
   // Pin the tracing root to this project. Without it Next walks up and can pick
   // an unrelated lockfile (e.g. a stray ~/package-lock.json) as the workspace
