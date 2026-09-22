@@ -207,32 +207,32 @@ ON CONFLICT (id) DO UPDATE SET
 -- standard rates. The early-bird framing (an "EARLY BIRD · LIMITED TIME"
 -- duration_label, a "Normally €…" price_note and a "first 50 members" blurb and
 -- FAQ entry) was removed at the client's request, so every card now shows a
--- plain duration and a single price. Each row keeps its own dedicated Stripe
--- link, which charges the price_cents shown here.
+-- plain duration and a single price. Each membership card's CTA opens its
+-- GymMaster membership page (empiregym.gymmasteronline.com/portal/membership/…).
 -- Reference only, the pre-discount list prices these replaced:
 --   Monthly €69.99, 3 months €209.97, 6 months €419.94, 12 months €839.88,
---   Student €59.99. To raise prices, update price_cents AND the Stripe link.
+--   Student €59.99. To raise prices, update price_cents AND the GymMaster membership.
 INSERT INTO public.services
   (business_id, name, description, duration_minutes, duration_label, price_cents, is_active, sort_order, group_name, group_blurb, is_popular, cta_label, cta_url, price_suffix, price_note)
 VALUES
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Monthly',  'Full gym access, cancel any time. The simplest way in.',
     30, 'Rolling monthly', 5500, true,  1, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
-    'Join now', 'https://buy.stripe.com/6oU8wP3KjbBbbsX40s0sU02', '/ mo', NULL),
+    'Join now', 'https://empiregym.gymmasteronline.com/portal/membership/b49c7058eae4195ab6d8c87fd3ee2d5d', '/ mo', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '3 months', 'Three months of full access, paid up front.',
     90, '3 months', 14900, true,  2, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Join now', 'https://buy.stripe.com/14AfZh2GfgVv9kPcwY0sU01', NULL, NULL),
+    'Join now', 'https://empiregym.gymmasteronline.com/portal/membership/902b79ce4f92b5b6b33ac91d174276be', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '6 months', 'Six months of Empire, better value for the committed.',
     180, '6 months', 28050, true,  3, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Join now', 'https://buy.stripe.com/6oU6oHgx5eNnfJd0Og0sU05', NULL, NULL),
+    'Join now', 'https://empiregym.gymmasteronline.com/portal/membership/1774f76e0abdaeaccadc56fb01266d9e', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', '12 months', 'A full year on the floor, our best rate.',
     365, '12 months', 49500, true,  4, 'Gym membership', 'Full access to the floor, the kit and the community.', true,
-    'Join now', 'https://buy.stripe.com/fZu8wPft1cFf1SnbsU0sU06', NULL, NULL),
+    'Join now', 'https://empiregym.gymmasteronline.com/portal/membership/f0da4c86f75c42df45c42d9f94eb852b', NULL, NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Student', 'Student discount price with full access to all facilities. Valid student ID required.',
     30, 'Rolling monthly', 4999, true,  5, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Join now', 'https://buy.stripe.com/5kQfZh80zbBb7cH8gI0sU04', '/ mo', NULL),
+    'Join now', 'https://empiregym.gymmasteronline.com/portal/membership/20f6556c6d86d5d1a71915ead566e281', '/ mo', NULL),
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Day pass', 'Just passing through? A full day on the floor.',
     1, '1 day', 1500, true,  6, 'Gym membership', 'Full access to the floor, the kit and the community.', false,
-    'Get a day pass', 'https://buy.stripe.com/fZu00jcgP5cNcx19kM0sU07', NULL, NULL),
+    'Get a day pass', 'https://empiregym.gymmasteronline.com/portal/membership/a8b44a5fd285bf2bf4a3f23c21b1e6e3', NULL, NULL),
 
   ('2ec3b899-e539-4a07-93f3-16682ad2ef86', 'Online Coaching', 'Fully tailored training, nutrition and check-ins. After checkout you''ll complete a short onboarding form and get your coaching packs.',
     30, 'Monthly · SS Coaching', 0, true,  7, 'Train with Stephen', 'SS Coaching, online coaching with Stephen Sharpe. Buy, complete your onboarding, and your plan is built around you.', true,
