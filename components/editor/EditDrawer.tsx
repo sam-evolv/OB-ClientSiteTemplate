@@ -25,6 +25,41 @@ import {
   SUBHEAD_MAX,
 } from '@/lib/editor/limits';
 
+/**
+ * Turn a chosen photo into something the server can safely accept.
+ *
+ * iPhones shoot HEIC and a Mac sends HEIC when the owner picks out of Photos, but
+ * sharp's Linux build (what Vercel runs) has no HEVC decoder — handing it HEIC
+ * aborts the function rather than throwing, which is why the panel used to
+ * vanish. Safari can decode HEIC natively, so convert here first and upload a
+ * JPEG. Where the browser cannot decode it, say so plainly instead of letting the
+ * upload fail with no explanation.
+ */
+async function prepareUpload(file: File): Promise<{ file: File } | { error: string }> {
+  const isHeic = /^image\/hei[cf]/.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+  if (!isHeic) return { file };
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('no 2d context');
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close?.();
+    const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
+    if (!blob) throw new Error('toBlob failed');
+    const name = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+    return { file: new File([blob], name, { type: 'image/jpeg' }) };
+  } catch {
+    return {
+      error:
+        'That is an iPhone HEIC photo, which this browser could not convert. On iPhone: Settings > Camera > Formats > Most Compatible. On a Mac: open it in Preview and export as JPEG.'
+    };
+  }
+}
+
 export interface EditorGalleryItem {
   id: string;
   url: string;
@@ -174,9 +209,11 @@ function HeroPanel({ content }: { content: EditorContent }) {
           <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            const fd = new FormData();
-            fd.append('file', file);
             startTransition(async () => {
+              const prep = await prepareUpload(file);
+              if ('error' in prep) { setError(prep.error); if (fileRef.current) fileRef.current.value = ''; return; }
+              const fd = new FormData();
+              fd.append('file', prep.file);
               const res = await uploadHeroAction(fd);
               // Show the new photo straight away; leaving the old preview up
               // makes a successful replace look like it did nothing.
@@ -248,9 +285,11 @@ function AboutPanel({ content }: { content: EditorContent }) {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              const fd = new FormData();
-              fd.append('file', file);
               startTransition(async () => {
+                const prep = await prepareUpload(file);
+                if ('error' in prep) { setError(prep.error); if (fileRef.current) fileRef.current.value = ''; return; }
+                const fd = new FormData();
+                fd.append('file', prep.file);
                 const res = await uploadAboutPortraitAction(fd);
                 if (res.ok) { setPortrait(res.url ?? null); setError(null); if (fileRef.current) fileRef.current.value = ''; }
                 else setError(res.error ?? 'That upload did not go through. Please try again.');
@@ -324,10 +363,12 @@ function GalleryPanel({ content }: { content: EditorContent }) {
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (!file) return;
-          const fd = new FormData();
-          fd.append('file', file);
           setError(null);
           startTransition(async () => {
+            const prep = await prepareUpload(file);
+            if ('error' in prep) { setError(prep.error); if (fileRef.current) fileRef.current.value = ''; return; }
+            const fd = new FormData();
+            fd.append('file', prep.file);
             const res = await addGalleryImageAction(fd);
             if (!res.ok) setError(res.error ?? 'Upload failed.');
             else if (res.url && res.id) {

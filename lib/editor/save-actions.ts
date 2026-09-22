@@ -36,17 +36,22 @@ const GALLERY_MAX_BYTES = 12 * 1024 * 1024;
  * the friendly message here fires before the framework would reject the request.
  * sharp downscales every upload, so the stored file is small regardless.
  */
-const ALLOWED_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif',
-  'image/heic',
-  'image/heif'
-];
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+
+/**
+ * HEIC/HEIF is deliberately NOT accepted here. It is what an iPhone produces and
+ * what a Mac sends when picking out of Photos, but sharp's Linux build (the one
+ * Vercel runs) has no HEVC decoder: handing it HEIC aborts the function instead
+ * of throwing, so the owner saw the panel vanish with no message. The browser
+ * converts HEIC to JPEG before upload instead — see prepareUpload in
+ * EditDrawer.tsx — and this is the backstop if a HEIC still reaches the server.
+ */
+const HEIC_TYPES = ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'];
 
 /** Shown when a file is refused, so the reason is never a mystery. */
-const TYPE_HELP = 'That file type is not supported. Please use a JPEG, PNG, WebP or iPhone (HEIC) photo.';
+const TYPE_HELP = 'That file type is not supported. Please use a JPEG, PNG or WebP photo.';
+const HEIC_HELP =
+  'That is an iPhone HEIC photo, which this browser could not convert. On iPhone: Settings > Camera > Formats > Most Compatible. On a Mac: open the photo in Preview and export it as JPEG.';
 
 /**
  * Textareas hand back CRLF: the DOM normalises their value's line endings. The
@@ -170,6 +175,7 @@ export async function uploadHeroAction(formData: FormData): Promise<SaveResult> 
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Choose a photo first.' };
   if (file.size > HERO_MAX_BYTES) return { ok: false, error: 'That photo is over 12MB. Try a smaller one.' };
+  if (HEIC_TYPES.includes(file.type)) return { ok: false, error: HEIC_HELP };
   if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: TYPE_HELP };
 
   try {
@@ -233,6 +239,7 @@ export async function addGalleryImageAction(formData: FormData): Promise<SaveRes
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Choose a photo first.' };
   if (file.size > GALLERY_MAX_BYTES) return { ok: false, error: 'That photo is over 12MB. Try a smaller one.' };
+  if (HEIC_TYPES.includes(file.type)) return { ok: false, error: HEIC_HELP };
   if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: TYPE_HELP };
 
   const { data: existing } = await sb
@@ -488,6 +495,7 @@ export async function uploadAboutPortraitAction(formData: FormData): Promise<Sav
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Choose a photo first.' };
   if (file.size > GALLERY_MAX_BYTES) return { ok: false, error: 'That photo is over 12MB. Try a smaller one.' };
+  if (HEIC_TYPES.includes(file.type)) return { ok: false, error: HEIC_HELP };
   if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: TYPE_HELP };
 
   try {
