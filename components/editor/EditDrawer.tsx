@@ -149,6 +149,7 @@ function ActionForm({
 function HeroPanel({ content }: { content: EditorContent }) {
   const [img, setImg] = useState(content.hero.imageUrl);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -163,7 +164,7 @@ function HeroPanel({ content }: { content: EditorContent }) {
 
       <div className="ed-field">
         <span className="ed-label">Hero photo</span>
-        <span className="ed-help">JPEG, PNG or WebP. The site crops it to a wide landscape automatically.</span>
+        <span className="ed-help">JPEG, PNG, WebP or an iPhone (HEIC) photo. The site crops it to a wide landscape automatically.</span>
         {img && (
           <div className="ed-media-item" style={{ aspectRatio: '16 / 9', marginTop: 6 }}>
             <img src={img} alt="" />
@@ -179,7 +180,10 @@ function HeroPanel({ content }: { content: EditorContent }) {
               const res = await uploadHeroAction(fd);
               // Show the new photo straight away; leaving the old preview up
               // makes a successful replace look like it did nothing.
-              if (res.ok) { setImg(res.url ?? null); if (fileRef.current) fileRef.current.value = ''; }
+              if (res.ok) { setImg(res.url ?? null); setError(null); if (fileRef.current) fileRef.current.value = ''; }
+              // A refusal has to say so. Silently doing nothing is what reads as
+              // "the dashboard is broken".
+              else setError(res.error ?? 'That upload did not go through. Please try again.');
             });
           }} />
           <button className="ed-button ed-button-ghost" type="button" disabled={pending} onClick={() => fileRef.current?.click()}>
@@ -199,6 +203,7 @@ function HeroPanel({ content }: { content: EditorContent }) {
             </button>
           )}
         </div>
+        {error && <p className="ed-error">{error}</p>}
       </div>
     </div>
   );
@@ -207,6 +212,7 @@ function HeroPanel({ content }: { content: EditorContent }) {
 function AboutPanel({ content }: { content: EditorContent }) {
   const [portrait, setPortrait] = useState(content.about.portraitUrl);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -246,7 +252,8 @@ function AboutPanel({ content }: { content: EditorContent }) {
               fd.append('file', file);
               startTransition(async () => {
                 const res = await uploadAboutPortraitAction(fd);
-                if (res.ok) { setPortrait(res.url ?? null); if (fileRef.current) fileRef.current.value = ''; }
+                if (res.ok) { setPortrait(res.url ?? null); setError(null); if (fileRef.current) fileRef.current.value = ''; }
+                else setError(res.error ?? 'That upload did not go through. Please try again.');
               });
             }}
           />
@@ -254,6 +261,7 @@ function AboutPanel({ content }: { content: EditorContent }) {
             {pending ? 'Uploading…' : portrait ? 'Replace photo' : 'Upload photo'}
           </button>
         </div>
+        {error && <p className="ed-error">{error}</p>}
       </div>
     </div>
   );

@@ -23,9 +23,30 @@ export interface SaveResult {
   id?: string;
 }
 
-const HERO_MAX_BYTES = 8 * 1024 * 1024;
-const GALLERY_MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const HERO_MAX_BYTES = 12 * 1024 * 1024;
+const GALLERY_MAX_BYTES = 12 * 1024 * 1024;
+
+/**
+ * HEIC/HEIF matter more than they look: it is what an iPhone produces by default,
+ * and it is what a Mac sends when the owner picks a photo out of Photos. Leaving
+ * it out meant the most likely photo in the world was refused. sharp decodes it
+ * and re-encodes to JPEG like any other input.
+ *
+ * These limits sit under next.config.mjs's serverActions.bodySizeLimit (16MB), so
+ * the friendly message here fires before the framework would reject the request.
+ * sharp downscales every upload, so the stored file is small regardless.
+ */
+const ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+  'image/heic',
+  'image/heif'
+];
+
+/** Shown when a file is refused, so the reason is never a mystery. */
+const TYPE_HELP = 'That file type is not supported. Please use a JPEG, PNG, WebP or iPhone (HEIC) photo.';
 
 /**
  * Textareas hand back CRLF: the DOM normalises their value's line endings. The
@@ -148,8 +169,8 @@ export async function uploadHeroAction(formData: FormData): Promise<SaveResult> 
 
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Choose a photo first.' };
-  if (file.size > HERO_MAX_BYTES) return { ok: false, error: 'That photo is over 8MB. Try a smaller one.' };
-  if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: 'Use a JPEG, PNG or WebP image.' };
+  if (file.size > HERO_MAX_BYTES) return { ok: false, error: 'That photo is over 12MB. Try a smaller one.' };
+  if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: TYPE_HELP };
 
   try {
     const processed = await polish(Buffer.from(await file.arrayBuffer()), 'hero');
@@ -211,8 +232,8 @@ export async function addGalleryImageAction(formData: FormData): Promise<SaveRes
 
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Choose a photo first.' };
-  if (file.size > GALLERY_MAX_BYTES) return { ok: false, error: 'That photo is over 5MB. Try a smaller one.' };
-  if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: 'Use a JPEG, PNG or WebP image.' };
+  if (file.size > GALLERY_MAX_BYTES) return { ok: false, error: 'That photo is over 12MB. Try a smaller one.' };
+  if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: TYPE_HELP };
 
   const { data: existing } = await sb
     .from('business_media')
@@ -466,8 +487,8 @@ export async function uploadAboutPortraitAction(formData: FormData): Promise<Sav
 
   const file = formData.get('file');
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: 'Choose a photo first.' };
-  if (file.size > GALLERY_MAX_BYTES) return { ok: false, error: 'That photo is over 5MB. Try a smaller one.' };
-  if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: 'Use a JPEG, PNG or WebP image.' };
+  if (file.size > GALLERY_MAX_BYTES) return { ok: false, error: 'That photo is over 12MB. Try a smaller one.' };
+  if (!ALLOWED_TYPES.includes(file.type)) return { ok: false, error: TYPE_HELP };
 
   try {
     const base = sharp(Buffer.from(await file.arrayBuffer()), { failOn: 'none' })
